@@ -3,7 +3,13 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-require('../node_modules/bootstrap/less/bootstrap.less')
+import BootstrapVue from 'bootstrap-vue'
+// import { Navbar } from 'bootstrap-vue/es/components'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+
+// require('../node_modules/bootstrap/less/bootstrap.less')
+Vue.use(BootstrapVue)
 
 Vue.config.productionTip = false
 

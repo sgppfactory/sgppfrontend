@@ -8,6 +8,7 @@ export {basicClient}
 
 function basicClient (url, method, params) {
   var data
+  var header = {}
 
   if (_.contains(['POST', 'PUT', 'PATCH'], method)) {
     const formData = new FormData()
@@ -23,11 +24,15 @@ function basicClient (url, method, params) {
     data = {params: params}
   }
 
+  if (localStorage.jwt) {
+    header = {header: {'Authorization': 'Bearer ' + localStorage.jwt}}
+  }
+
   return httpClient.request(_.extend({
     url: url,
     method: method,
     baseURL: config.API_URL
-  }, data))
+  }, data, header))
 }
 
 // function getPrivateStartupBattles() {
