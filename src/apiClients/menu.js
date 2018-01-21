@@ -1,7 +1,7 @@
 import {basicClient} from '../utils/httpClient'
 
 export default {
-  login: function (username, password) {
+  get: function () {
     return basicClient('/menu', 'GET')
   }
 }

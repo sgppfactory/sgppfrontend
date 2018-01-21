@@ -25,13 +25,15 @@ function basicClient (url, method, params) {
   }
 
   if (localStorage.jwt) {
-    header = {header: {'Authorization': 'Bearer ' + localStorage.jwt}}
+    header = {headers: {'Authorization': 'Bearer ' + localStorage.jwt}}
   }
 
+  // console.log(header)
   return httpClient.request(_.extend({
     url: url,
     method: method,
     baseURL: config.API_URL
+    // headers: header
   }, data, header))
 }
 

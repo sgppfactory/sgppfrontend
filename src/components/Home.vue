@@ -6,24 +6,8 @@
 
       <b-collapse is-nav id="nav_collapse">
 
-        <b-navbar-nav>
-          <b-nav-item href="#">Propuestas / Proyectos</b-nav-item>
-        </b-navbar-nav>
-
-        <b-navbar-nav>
-          <b-nav-item href="#">Tareas</b-nav-item>
-        </b-navbar-nav>
-
-        <b-navbar-nav>
-          <b-nav-item href="#">Personas</b-nav-item>
-        </b-navbar-nav>
-
-        <b-navbar-nav>
-          <b-nav-item href="#">Reportes</b-nav-item>
-        </b-navbar-nav>
-
-        <b-navbar-nav>
-          <b-nav-item href="#">Configuración</b-nav-item>
+        <b-navbar-nav v-for="item in menuPrincipal">
+          <b-nav-item :to="item.url">{{item.label}}</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
@@ -55,12 +39,25 @@
 </template>
 
 <script>
+import menu from '../apiClients/menu'
 export default {
   name: 'Home',
   data () {
     return {
       msg: 'Al toke perro!',
-      username: 'Pepito'
+      username: 'Pepito',
+      menu: []
+    }
+  },
+  computed: {
+    menuPrincipal: () => {
+      var _this = this
+      menu.get()
+        .then((data) => {
+          _this.menu = data
+        })
+
+      return this.menu
     }
   }
 }
