@@ -4,6 +4,7 @@ import Router from 'vue-router'
 import Login from '@/components/Login'
 import Home from '@/components/Home'
 import UserConfig from '@/components/UserConfig'
+import PersonsHome from '@/components/Persons'
 
 Vue.use(Router)
 
@@ -28,6 +29,10 @@ export default new Router({
       path: '/userconfig',
       name: 'UserConfig',
       component: UserConfig
+    }, {
+      path: '/persons',
+      name: 'Persons',
+      component: PersonsHome
     }
   ]
 })

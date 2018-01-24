@@ -50,7 +50,7 @@ export default {
     }
   },
   methods: {
-    login (evt) {
+    update (evt) {
       evt.preventDefault()
       auth.login(this.username, this.password).then((response) => {
         this.messageError = ''

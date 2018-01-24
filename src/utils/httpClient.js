@@ -28,7 +28,6 @@ function basicClient (url, method, params) {
     header = {headers: {'Authorization': 'Bearer ' + localStorage.jwt}}
   }
 
-  // console.log(header)
   return httpClient.request(_.extend({
     url: url,
     method: method,
