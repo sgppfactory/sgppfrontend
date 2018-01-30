@@ -73,7 +73,7 @@ export default {
         } else {
           this.logout()
         }
-      }).catch((error) => {
+      }).catch(() => {
         this.logout()
         // if (error.status == 409) {
         // }
