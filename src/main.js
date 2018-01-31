@@ -8,10 +8,14 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
+import Icon from 'vue-awesome/components/Icon'
+
 // require('../node_modules/bootstrap/less/bootstrap.less')
 Vue.use(BootstrapVue)
 
 Vue.config.productionTip = false
+
+Vue.component('icon', Icon)
 
 /* eslint-disable no-new */
 new Vue({

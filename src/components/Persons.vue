@@ -4,27 +4,43 @@
     <div class="container">
       <h1>{{ title }}</h1>
       <b-form inline @submit="search">
-        <div class="form-inline-left">
+        <b-col sm="10">
           <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar personas" v-model="searchParam" />
-          <b-button variant="primary">buscar</b-button>
-        </div>
-        <div class="form-inline-right">
-          <b-button variant="primary" class="">Nueva Persona</b-button>
-        </div>
+          <b-button variant="primary"><icon name="search" /> Buscar</b-button>
+        </b-col>
+        <b-col sm="2">
+          <b-button variant="primary" href="#/addperson"><icon name="plus" /> Nueva Persona</b-button>
+        </b-col>
       </b-form>
-      <b-table striped hover :items="persons" :fields="fields"></b-table>
-      <div class="row">
-        <div class="mt-8">
-          <b-pagination-nav base-url="#" :number-of-pages="10" v-model="currentPage" />
-        </div>
-        <!-- <b-pagination-nav :link-gen="linkGen" :number-of-pages="10" v-model="currentPage" /> -->
-        <div class="mt-4">Página actual: {{currentPage}}</div>
-      </div>
+      <b-table striped hover :items="persons" :fields="fields" :key="person">
+        <template slot="HEAD_actions">
+          Opciones
+        </template>
+        <template slot="actions" slot-scope="person">
+          <!-- We use click.stop here to prevent 'sort-changed' or 'head-clicked' events -->
+          <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
+          <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
+          <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
+          <router-link :to="{ name: 'modperson', params: { personId: person.id }}" title="Modificar persona"> 
+            <icon name="edit" />
+          </router-link>
+          <a @click="deleteperson( person.id )" title="Borrar persona">
+            <icon name="remove" />
+          </a>
+        </template>
+      </b-table>
+      <b-row>
+        <b-col sm="9">
+          <b-pagination-nav :link-gen="search" base-url="#" :number-of-pages="cantPages" v-model="currentPage" />
+        </b-col>
+        <b-col sm="3" align="center">Registros: {{cantResults}}</b-col>
+      </b-row>
     </div>
   </div>
 </template>
 
 <script>
+import 'vue-awesome/icons'
 import persons from '../apiClients/persons'
 import Menu from '@/components/Menu'
 export default {
@@ -39,10 +55,18 @@ export default {
         {label: 'Apellido', key: 'lastname'},
         {label: 'Email', key: 'email'},
         {label: 'Teléfono', key: 'tel'},
-        {label: 'Usuario', key: 'username'}
+        {label: 'Usuario', key: 'username'},
+        {label: 'Opciones', key: 'actions'}
       ],
       currentPage: 1,
-      searchParam: ''
+      searchParam: '',
+      cantPages: 1,
+      cantResults: 1
+    }
+  },
+  computed: {
+    resultNegative: () => {
+      return this.cantResults === 0
     }
   },
   created () {
@@ -54,9 +78,8 @@ export default {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    search (ev) {
-      var params = this.searchParam ? { 
-        // var params = { 
+    search (page) {
+      var params = this.searchParam ? {
         filter: [
           {key: 'name', value: 'fsoto', operator: 'like', operator_sup: 'OR'},
           {key: 'lastname', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
@@ -65,15 +88,25 @@ export default {
         ]
       } : {}
 
+      if (page) {
+        params.page = page
+      }
+
       persons.getFilter(params)
       .then((result) => {
         this.persons = (result.status === 200)
         ? result.data.result
         : []
+
+        this.cantPages = result.data.pages
+        this.cantResults = result.data.total
       }).catch((error) => {
         console.log(error)
         // this.logout()
       })
+    },
+    deleteperson (id) {
+      console.log(id)
     }
   }
 }
@@ -95,11 +128,15 @@ li {
 }
 a {
   color: #42b983;
+  cursor: pointer;
+}
+button a {
+  color: #000000;
 }
 .form-inline {
   margin-bottom: 20px;
 }
 .form-inline-right {
-  margin-left: 60%;
+  margin-left: 55%;
 }
 </style>
