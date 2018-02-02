@@ -9,5 +9,8 @@ export default {
   },
   update: function (params) {
     return basicClient('/person', 'PUT', params)
+  },
+  remove: function (id) {
+    return basicClient('/person/' + id, 'DELETE')
   }
 }

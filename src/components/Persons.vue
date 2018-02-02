@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <div :is="menuComponent"></div>
-    <div class="container">
+    <b-container fluid>
       <h1>{{ title }}</h1>
       <b-form inline @submit="search">
         <b-col sm="10">
@@ -21,10 +21,10 @@
           <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
           <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
           <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
-          <router-link :to="{ name: 'modperson', params: { personId: person.id }}" title="Modificar persona"> 
+          <router-link :to="{ name: 'modperson', params: { personId: person.id }}" v-b-tooltip.hover title="Modificar persona"> 
             <icon name="edit" />
           </router-link>
-          <a @click="deleteperson( person.id )" title="Borrar persona">
+          <a @click="toRemove=person.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
             <icon name="remove" />
           </a>
         </template>
@@ -35,8 +35,20 @@
         </b-col>
         <b-col sm="3" align="center">Registros: {{cantResults}}</b-col>
       </b-row>
-    </div>
+    </b-container>
+  <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
+    <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
+    <div slot="modal-footer" class="w-100 text-right">
+     <b-btn size="sm" variant="danger" @click="deleteperson(this)">
+       Eliminar
+     </b-btn>
+     <b-btn size="sm" variant="primary" @click="show=false">
+       Cancelar
+     </b-btn>
+   </div>
+  </b-modal>
   </div>
+  <!-- </div> -->
 </template>
 
 <script>
@@ -61,7 +73,9 @@ export default {
       currentPage: 1,
       searchParam: '',
       cantPages: 1,
-      cantResults: 1
+      cantResults: 1,
+      show: false,
+      toRemove: 0
     }
   },
   computed: {
@@ -107,6 +121,18 @@ export default {
     },
     deleteperson (id) {
       console.log(id)
+      persons.remove(this.toRemove)
+      .then((result) => {
+        if (result.status === 200) {
+          this.toRemove = 0
+          console.log(result)
+        } else {
+
+        }
+      }).catch((error) => {
+        console.log(error)
+        // this.logout()
+      })
     }
   }
 }
@@ -126,12 +152,9 @@ li {
   display: inline-block;
   margin: 0 10px;
 }
-a {
+a:not(.btn) {
   color: #42b983;
   cursor: pointer;
-}
-button a {
-  color: #000000;
 }
 .form-inline {
   margin-bottom: 20px;

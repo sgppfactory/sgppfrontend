@@ -1,9 +1,64 @@
 <template>
   <div class="hello">
     <div :is="menuComponent"></div>
-    <div class="container">
-      {{title}}
-    </div>
+    <b-breadcrumb :items="bread"/>
+    <b-container>
+      <h1>{{title}}</h1>
+      <b-form @submit="submit" @reset="onReset">
+        <b-form-group label="Nombre:" label-for="exampleInput1">
+          <b-form-input id="exampleInput1"
+                        type="text"
+                        v-model="form.name"
+                        required
+                        placeholder="Ingrese el nombre">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Apellido:" label-for="exampleInput2">
+          <b-form-input id="exampleInput2"
+                        type="text"
+                        v-model="form.lastname"
+                        required
+                        placeholder="Ingresar apellido">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Email *:" label-for="exampleInput3">
+          <b-form-input id="exampleInput3"
+                        type="text"
+                        required
+                        v-model="form.email"
+                        placeholder="Ingresar email">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Teléfono:" label-for="exampleInput4">
+          <b-form-input id="exampleInput4"
+                        type="text"
+                        v-model="form.tel"
+                        placeholder="Ingresar un teléfono particular">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Celular:" label-for="exampleInput5">
+          <b-form-input id="exampleInput5"
+                        type="text"
+                        v-model="form.cel"
+                        placeholder="Ingresar un teléfono celular">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Ubicación o domicilio:" label-for="exampleInput6">
+          <b-form-input id="exampleInput6"
+                        type="text"
+                        v-model="form.location"
+                        placeholder="Ingresar un domicilio">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group>
+          <b-form-checkbox-group v-model="form.user">
+            <b-form-checkbox value="true">Crear usuario</b-form-checkbox>
+          </b-form-checkbox-group>
+        </b-form-group>
+        <b-button type="submit" variant="primary">Crear</b-button>
+        <b-button type="reset" variant="danger">Limpiar</b-button>
+      </b-form>
+    </b-container>
   </div>
 </template>
 
@@ -16,13 +71,30 @@ export default {
   data () {
     return {
       title: 'Alta de personas',
-      persons: [],
-      menuComponent: undefined
+      menuComponent: undefined,
+      bread: [{
+        text: 'Inicio',
+        href: '#/home'
+      }, {
+        text: 'Personas',
+        href: '#/persons'
+      }, {
+        text: 'Alta de persona',
+        active: true
+      }],
+      form: {
+        name: '',
+        lastname: '',
+        email: '',
+        tel: '',
+        cel: '',
+        location: '',
+        user: false
+      }
     }
   },
   created () {
     this.menuComponent = Menu
-    // this.search()s
   },
   methods: {
     logout () {
@@ -45,6 +117,16 @@ export default {
         console.log(error)
         // this.logout()
       })
+    },
+    onReset () {
+      this.form = {
+        name: '',
+        lastname: '',
+        email: '',
+        tel: '',
+        cel: '',
+        location: ''
+      }
     }
   }
 }
