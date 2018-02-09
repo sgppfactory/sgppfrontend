@@ -12,21 +12,37 @@
           <b-button variant="primary" href="#/addperson"><icon name="plus" /> Nueva Persona</b-button>
         </b-col>
       </b-form>
-      <b-table striped hover :items="persons" :fields="fields" :key="person">
+      <b-table striped hover show-empty 
+        :items="persons" 
+        :fields="fields" 
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc" >
         <template slot="HEAD_actions">
           Opciones
         </template>
-        <template slot="actions" slot-scope="person">
+        <template slot="actions" slot-scope="row">
           <!-- We use click.stop here to prevent 'sort-changed' or 'head-clicked' events -->
           <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
           <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
           <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
-          <router-link :to="{ name: 'modperson', params: { personId: person.id }}" v-b-tooltip.hover title="Modificar persona"> 
+          <router-link :to="{ name: 'modperson', params: { personId: row.id }}" v-b-tooltip.hover title="Modificar persona"> 
             <icon name="edit" />
           </router-link>
-          <a @click="toRemove=person.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
+          <!-- v-bind="row.detailsShowing"  -->
+          <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
+            <icon name="info" />
+          </a>
+          <a @click="toRemove=row.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
             <icon name="remove" />
           </a>
+        </template>
+        <template slot="empty">¡Sin personas para mostrar!</template>
+        <template slot="row-details" slot-scope="row">
+          <b-card>
+            <ul>
+              <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value}}</li>
+            </ul>
+          </b-card>
         </template>
       </b-table>
       <b-row>
@@ -63,19 +79,22 @@ export default {
       persons: [],
       menuComponent: undefined,
       fields: [
-        {label: 'Nombre', key: 'name'},
-        {label: 'Apellido', key: 'lastname'},
-        {label: 'Email', key: 'email'},
+        {label: 'Nombre', key: 'name', sortable: true},
+        {label: 'Apellido', key: 'lastname', sortable: true},
+        {label: 'Email', key: 'email', sortable: true},
         {label: 'Teléfono', key: 'tel'},
         {label: 'Usuario', key: 'username'},
-        {label: 'Opciones', key: 'actions'}
+        {label: 'Opciones', key: 'actions', 'class': 'text-center'}
       ],
       currentPage: 1,
       searchParam: '',
       cantPages: 1,
       cantResults: 1,
       show: false,
-      toRemove: 0
+      toRemove: 0,
+      isBusy: false,
+      sortBy: 'name',
+      sortDesc: false
     }
   },
   computed: {
@@ -122,6 +141,21 @@ export default {
     deleteperson (id) {
       console.log(id)
       persons.remove(this.toRemove)
+      .then((result) => {
+        if (result.status === 200) {
+          this.toRemove = 0
+          console.log(result)
+        } else {
+
+        }
+      }).catch((error) => {
+        console.log(error)
+        // this.logout()
+      })
+    },
+    showDetails (id) {
+      console.log(id)
+      persons.get(id)
       .then((result) => {
         if (result.status === 200) {
           this.toRemove = 0
