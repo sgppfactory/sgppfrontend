@@ -57,7 +57,7 @@ export default {
         localStorage.jwt = response.data.jwt
         this.$router.push('home')
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
         if (error.response) {
           this.messageError = error.response.data.msg
         } else {

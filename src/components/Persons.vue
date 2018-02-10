@@ -25,14 +25,14 @@
           <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
           <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
           <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
-          <router-link :to="{ name: 'modperson', params: { personId: row.id }}" v-b-tooltip.hover title="Modificar persona"> 
+          <router-link :to="{ name: 'modperson', params: { personId: row.item.id }}" v-b-tooltip.hover title="Modificar persona"> 
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
           <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
-          <a @click="toRemove=row.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
+          <a @click="toRemove=row.item.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
             <icon name="remove" />
           </a>
         </template>
@@ -55,7 +55,7 @@
   <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
     <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
     <div slot="modal-footer" class="w-100 text-right">
-     <b-btn size="sm" variant="danger" @click="deleteperson(this)">
+     <b-btn size="sm" variant="danger" @click="deleteperson()">
        Eliminar
      </b-btn>
      <b-btn size="sm" variant="primary" @click="show=false">
@@ -104,7 +104,7 @@ export default {
   },
   created () {
     this.menuComponent = Menu
-    this.search()
+    // this.search()
   },
   methods: {
     logout () {
@@ -126,47 +126,45 @@ export default {
       }
 
       persons.getFilter(params)
-      .then((result) => {
-        this.persons = (result.status === 200)
-        ? result.data.result
-        : []
+        .then((result) => {
+          this.persons = (result.status === 200)
+          ? result.data.result
+          : []
 
-        this.cantPages = result.data.pages
-        this.cantResults = result.data.total
-      }).catch((error) => {
-        console.log(error)
-        // this.logout()
-      })
+          this.cantPages = result.data.pages
+          this.cantResults = result.data.total
+        }).catch((error) => {
+          console.log(error)
+          // this.logout()
+        })
     },
-    deleteperson (id) {
-      console.log(id)
+    deleteperson () {
       persons.remove(this.toRemove)
-      .then((result) => {
-        if (result.status === 200) {
-          this.toRemove = 0
-          console.log(result)
-        } else {
-
-        }
-      }).catch((error) => {
-        console.log(error)
-        // this.logout()
-      })
+        .then((result) => {
+          // console.log(result)
+          if (result.status === 200) {
+            this.toRemove = 0
+            this.search()
+            this.show = false
+          }
+        }).catch((error) => {
+          console.log(error)
+          // this.logout()
+        })
     },
     showDetails (id) {
-      console.log(id)
       persons.get(id)
-      .then((result) => {
-        if (result.status === 200) {
-          this.toRemove = 0
-          console.log(result)
-        } else {
+        .then((result) => {
+          if (result.status === 200) {
+            this.toRemove = 0
+            // console.log(result)
+          } else {
 
-        }
-      }).catch((error) => {
-        console.log(error)
-        // this.logout()
-      })
+          }
+        }).catch((error) => {
+          console.log(error)
+          // this.logout()
+        })
     }
   }
 }
