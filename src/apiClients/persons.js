@@ -12,5 +12,8 @@ export default {
   },
   remove: function (id) {
     return basicClient('/person/' + id, 'DELETE')
+  },
+  getById: function (id) {
+    return basicClient('/person/' + id, 'GET')
   }
 }

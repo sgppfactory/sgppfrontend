@@ -108,11 +108,11 @@
           </b-col>
           <b-col v-if="form.withuser">
             <b-form-group label="Perfil de usuario:" label-for="exampleInput7">
-              <b-form-input id="exampleInput7"
-                            type="text"
-                            v-model.trim="form.username"
-                            placeholder="Ingresar un nombre de uusario">
-              </b-form-input>
+              <b-form-select id="exampleInput7"
+                            v-model="form.rol"
+                            placeholder="Seleccionar un perfil de usuario"
+                            :options="optionsRols">
+              </b-form-select>
             </b-form-group>
           </b-col>
         </b-row>
@@ -126,6 +126,7 @@
 <script>
 import 'vue-awesome/icons'
 import persons from '../apiClients/persons'
+import rol from '../apiClients/rol'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
 
@@ -159,12 +160,27 @@ export default {
         cel: '',
         location: '',
         withuser: false,
-        username: ''
-      }
+        rol: ''
+      },
+      optionsRols: []
     }
   },
   created () {
     this.menuComponent = Menu
+    rol.get()
+      .then((rolData) => {
+        rolData = rolData.data.message
+        if(rolData) {
+          this.optionsRols = _.map(rolData, (item) => {
+            return {
+              value: item.id,
+              text: item.name
+            }
+          })
+        }
+      }).catch(() => {
+        this.logout()
+      })
     // person.findById(id)
   },
   methods: {

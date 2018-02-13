@@ -2,7 +2,10 @@
   <div class="hello">
     <b-navbar toggleable="md" type="dark" variant="info">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
-      <b-navbar-brand href="#/home">SGPP</b-navbar-brand>
+      <b-navbar-brand href="#/home" v-show="logoImg">
+        <img title="logoStr" src="logoImg"></img>
+      </b-navbar-brand>
+      <b-navbar-brand href="#/home" v-show="!logoImg">{{logoStr}}</b-navbar-brand>
 
       <b-collapse is-nav id="nav_collapse">
 
@@ -32,6 +35,7 @@
 <script>
 import menu from '../apiClients/menu'
 import auth from '../apiClients/auth'
+import implementation from '../apiClients/implementation'
 import _ from 'underscore'
 export default {
   name: 'Menu',
@@ -39,7 +43,9 @@ export default {
     return {
       username: 'Pepito',
       menu: [],
-      menuUser: []
+      menuUser: [],
+      logoStr: 'SGPP',
+      logoImg: ''
     }
   },
   created () {
@@ -77,6 +83,21 @@ export default {
         this.logout()
         // if (error.status == 409) {
         // }
+      })
+
+    implementation.get()
+      .then((result) => {
+        if (result.status === 200) {
+          let implData = JSON.parse(result.data.message)
+          if (implData.logo) {
+            this.logoImg = implData.logo
+            this.logoStr = implData.name
+          }
+        } else {
+          this.logout()
+        }
+      }).catch(() => {
+        this.logout()
       })
   },
   methods: {
