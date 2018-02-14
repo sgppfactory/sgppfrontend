@@ -165,12 +165,22 @@ export default {
       optionsRols: []
     }
   },
+  computed: {
+    formClass: function () {
+      return {
+        'is-invalid': this.messageError !== ''
+      }
+    },
+    showErrorMsg: function () {
+      return this.messageError !== ''
+    }
+  },
   created () {
     this.menuComponent = Menu
     rol.get()
       .then((rolData) => {
         rolData = rolData.data.message
-        if(rolData) {
+        if (rolData) {
           this.optionsRols = _.map(rolData, (item) => {
             return {
               value: item.id,
@@ -214,7 +224,8 @@ export default {
         tel: '',
         cel: '',
         location: '',
-        withuser: false
+        withuser: false,
+        rol: ''
       }
     },
     showAlertSuccess () {

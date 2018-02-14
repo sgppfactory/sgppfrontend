@@ -2,7 +2,20 @@
   <div class="hello">
     <div :is="menuComponent"></div>
     <div class="container">
-      <h1>{{ msg }}</h1>
+      <b-row>
+        <b-col>
+          <h3>{{ title }}</h3>
+        </b-col>
+        <b-col>
+          <h4>{{ msg }}</h4>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+        </b-col>
+        <b-col>
+        </b-col>
+      </b-row>
     </div>
   </div>
 </template>
@@ -13,7 +26,8 @@ export default {
   name: 'Home',
   data () {
     return {
-      msg: 'Al toke perro!',
+      title: 'Bienvenido/a',
+      msg: 'Qué sucede en ...?',
       menuComponent: undefined
     }
   },

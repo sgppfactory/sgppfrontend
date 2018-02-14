@@ -6,6 +6,7 @@ import Home from '@/components/Home'
 import UserConfig from '@/components/UserConfig'
 import PersonsHome from '@/components/Persons'
 import Addperson from '@/components/Addperson'
+import AppConfiguration from '@/components/AppConfiguration'
 
 Vue.use(Router)
 
@@ -42,6 +43,10 @@ export default new Router({
       path: '/addperson',
       name: 'Addperson',
       component: Addperson
+    }, {
+      path: '/config_system',
+      name: 'AppConfiguration',
+      component: AppConfiguration
     }
   ]
 })
