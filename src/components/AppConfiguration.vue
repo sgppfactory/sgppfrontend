@@ -3,14 +3,32 @@
     <div :is="menuComponent"></div>
     <b-container fluid>
       <h1>{{ title }}</h1>
-      <b-form inline @submit="search">
         <b-col sm="10">
-          <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar dentro de la estructura" v-model="searchParam" />
-        </b-col>
-        <b-col sm="2">
           <b-button variant="primary" href="#/addperson"><icon name="plus" /> Nueva Estructura</b-button>
         </b-col>
-      </b-form>
+        <b-col sm="2">
+        </b-col>
+      <b-row>
+        <li>
+        <div
+          :class="{bold: isFolder}"
+          @click="toggle"
+          @dblclick="changeType">
+          {{model.name}}
+          <span v-if="isFolder">[{{open ? '-' : '+'}}]</span>
+        </div>
+        <ul v-show="open" v-if="isFolder">
+          <item
+            class="item"
+            v-for="model in model.children"
+            :model="model">
+          </item>
+          <li class="add" @click="addChild">+</li>
+        </ul>
+      </li>
+      </b-row>
+      <notifications group="success" />
+      <notifications group="error" />
     </b-container>
     <b-modal id="deleteModal" v-model="show" title="Eliminar Nodo">
       <p class="my-2">¿Está seguro/a que desea realizar la siguiente acción?</p>
@@ -37,18 +55,42 @@ export default {
   data () {
     return {
       title: 'Configuración del sistema',
-      appTree: [],
+      // appTree: [],
+      children: [
+        { name: 'hello' },
+        { name: 'wat' },
+        {
+          name: 'child folder',
+          children: [
+            {
+              name: 'child folder',
+              children: [
+                { name: 'hello' },
+                { name: 'wat' }
+              ]
+            },
+            { name: 'hello' },
+            { name: 'wat' },
+            {
+              name: 'child folder',
+              children: [
+                { name: 'hello' },
+                { name: 'wat' }
+              ]
+            }
+          ]
+        }
+      ],
       menuComponent: undefined,
       toRemove: 0,
-      show: false
-      // currentPage: 1,
-      // searchParam: '',
-      // cantPages: 1,
-      // cantResults: 1,
-      // show: false,
-      // isBusy: false,
-      // sortBy: 'name',
-      // sortDesc: false
+      show: false ,
+      open: false
+    }
+  },
+  computed: {
+    isFolder: function () {
+      return this.children &&
+        this.children.length
     }
   },
   created () {
@@ -56,11 +98,28 @@ export default {
     // this.search()
   },
   methods: {
+    toggle: function () {
+      if (this.isFolder) {
+        this.open = !this.open
+      }
+    },
+    changeType: function () {
+      if (!this.isFolder) {
+        Vue.set(this, 'children', [])
+        this.addChild()
+        this.open = true
+      }
+    },
+    addChild: function () {
+      this.children.push({
+        name: 'new stuff'
+      })
+    },
     logout () {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    buildTree (page) {
+    buildTree (params) {
       app.getConfig(params)
         .then((result) => {
           this.persons = (result.status === 200)

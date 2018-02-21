@@ -3,15 +3,17 @@
     <div :is="menuComponent"></div>
     <b-container fluid>
       <h1>{{ title }}</h1>
-      <b-form inline @submit="search">
+      <b-row>
         <b-col sm="10">
-          <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar personas" v-model="searchParam" />
-          <b-button variant="primary"><icon name="search" /> Buscar</b-button>
+          <b-form inline @submit="search">
+              <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar personas" v-model="searchParam" />
+              <!-- <b-button variant="primary"><icon name="search" /> Buscar</b-button> -->
+          </b-form>
         </b-col>
         <b-col sm="2">
           <b-button variant="primary" href="#/addperson"><icon name="plus" /> Nueva Persona</b-button>
         </b-col>
-      </b-form>
+      </b-row>
       <b-table striped hover show-empty 
         :items="persons" 
         :fields="fields" 
@@ -51,18 +53,20 @@
         </b-col>
         <b-col sm="3" align="center">Registros: {{cantResults}}</b-col>
       </b-row>
+      <notifications group="success" />
+      <notifications group="error" />
     </b-container>
-  <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
-    <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
-    <div slot="modal-footer" class="w-100 text-right">
-     <b-btn size="sm" variant="danger" @click="deleteperson()">
-       Eliminar
-     </b-btn>
-     <b-btn size="sm" variant="primary" @click="show=false">
-       Cancelar
-     </b-btn>
-   </div>
-  </b-modal>
+    <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
+      <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
+      <div slot="modal-footer" class="w-100 text-right">
+       <b-btn size="sm" variant="danger" @click="deleteperson()">
+         Eliminar
+       </b-btn>
+       <b-btn size="sm" variant="primary" @click="show=false">
+         Cancelar
+       </b-btn>
+     </div>
+    </b-modal>
   </div>
   <!-- </div> -->
 </template>
@@ -104,7 +108,6 @@ export default {
   },
   created () {
     this.menuComponent = Menu
-    // this.search()
   },
   methods: {
     logout () {
@@ -114,7 +117,7 @@ export default {
     search (page) {
       var params = this.searchParam ? {
         filter: [
-          {key: 'name', value: 'fsoto', operator: 'like', operator_sup: 'OR'},
+          {key: 'name', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
           {key: 'lastname', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
           {key: 'email', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
           // {key: 'username', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
@@ -134,7 +137,13 @@ export default {
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((error) => {
-          console.log(error)
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: error.data.message,
+            type: 'error',
+            position: 'bottom right'
+          })
           // this.logout()
         })
     },
@@ -144,11 +153,25 @@ export default {
           // console.log(result)
           if (result.status === 200) {
             this.toRemove = 0
-            this.search()
             this.show = false
+            this.$notify({
+              group: 'success',
+              title: 'Ok!',
+              text: result.data.message,
+              type: 'success',
+              position: 'bottom right'
+            })
+            this.search()
           }
         }).catch((error) => {
-          console.log(error)
+          // console.log(error)
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: error.data.message,
+            type: 'error',
+            position: 'bottom right'
+          })
           // this.logout()
         })
     },

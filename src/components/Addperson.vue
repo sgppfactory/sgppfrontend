@@ -4,31 +4,11 @@
     <b-breadcrumb :items="bread"/>
     <b-container>
       <h1>{{title}}</h1>
-      <b-alert variant="danger"
-             dismissible
-             :show="showDismissibleAlert"
-             @dismissed="showDismissibleAlert=false">
-        {{errorMessage}}
-      </b-alert>
-
-      <b-alert :show="dismissCountDown"
-               dismissible
-               variant="success"
-               @dismissed="dismissCountDown=0"
-               @dismiss-count-down="countDownChanged">
-        <p>Persona creada satisfactoriamente!</p>
-        <b-progress variant="success"
-                    :max="dismissSecs"
-                    :value="dismissCountDown"
-                    height="4px">
-        </b-progress>
-      </b-alert>
-
       <b-form @submit="submit" @reset="onReset">
         <b-row>
           <b-col>
-            <b-form-group label="Nombres:" label-for="exampleInput1">
-              <b-form-input id="exampleInput1"
+            <b-form-group label="Nombres:" label-for="name">
+              <b-form-input id="name"
                             type="text"
                             v-model.trim="form.name"
                             required
@@ -37,8 +17,8 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Apellidos:" label-for="exampleInput2">
-              <b-form-input id="exampleInput2"
+            <b-form-group label="Apellidos:" label-for="lastname">
+              <b-form-input id="lastname"
                             type="text"
                             v-model.trim="form.lastname"
                             required
@@ -47,8 +27,8 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Email:" label-for="exampleInput3">
-              <b-form-input id="exampleInput3"
+            <b-form-group label="Email:" label-for="email">
+              <b-form-input id="email"
                             type="text"
                             required
                             v-model.trim="form.email"
@@ -57,23 +37,23 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Fecha de nacimiento:" label-for="exampleInput3">
-              <b-form-input id="exampleInput3"
+            <b-form-group label="Fecha de nacimiento:" label-for="date_birth">
+              <b-form-input id="date_birth"
                             type="date"
                             v-model.trim="form.datenac"
                             placeholder="Seleccionar fecha de nacimiento"
                             >
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Teléfono:" label-for="exampleInput4">
-              <b-form-input id="exampleInput4"
+            <b-form-group label="Teléfono:" label-for="tel">
+              <b-form-input id="tel"
                             type="text"
                             v-model.trim="form.tel"
                             placeholder="Ingresar un teléfono particular">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Celular:" label-for="exampleInput5">
-              <b-form-input id="exampleInput5"
+            <b-form-group label="Celular:" label-for="cel">
+              <b-form-input id="cel"
                             type="text"
                             v-model.trim="form.cel"
                             placeholder="Ingresar un teléfono celular">
@@ -81,8 +61,8 @@
             </b-form-group>
           </b-col>
           <b-col>
-            <b-form-group label="Ubicación o domicilio:" label-for="exampleInput6">
-              <b-form-input id="exampleInput6"
+            <b-form-group label="Ubicación o domicilio:" label-for="location">
+              <b-form-input id="location"
                             type="text"
                             v-model.trim="form.location"
                             placeholder="Ingresar un domicilio">
@@ -120,6 +100,8 @@
         <b-button type="reset" variant="danger">Limpiar</b-button>
       </b-form>
     </b-container>
+    <notifications group="success" />
+    <notifications group="error" />
   </div>
 </template>
 
@@ -135,9 +117,6 @@ export default {
   data () {
     return {
       title: 'Alta de personas',
-      dismissSecs: 3,
-      dismissCountDown: 0,
-      showDismissibleAlert: false,
       showTooltip: false,
       errorMessage: '',
       targetTooltip: '',
@@ -191,7 +170,6 @@ export default {
       }).catch(() => {
         this.logout()
       })
-    // person.findById(id)
   },
   methods: {
     logout () {
@@ -205,16 +183,37 @@ export default {
       }
 
       persons.post(_.extend(this.form, params))
-      .then((result) => {
-        console.log(result)
-        if (result.status === 201) {
-          this.showAlertSuccess()
-        }
-      }).catch((error) => {
-        this.errorMessage = error
-        console.log(error)
-        // this.logout()
-      })
+        .then((result) => {
+          console.log(result)
+          if (result.status === 201) {
+            this.$notify({
+              group: 'success',
+              title: 'Ok!',
+              text: result.data.message,
+              type: 'success'
+              // position: 'bottom right'
+            })
+            this.onReset()
+            // this.showAlertSuccess()
+          } else {
+            this.$notify({
+              group: 'error',
+              title: 'Ops!',
+              text: result.data.message,
+              type: 'error'
+            })
+          }
+        }).catch((error) => {
+          // console.log(error)
+          this.errorMessage = error.response.data.msg
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: error.response.data.msg,
+            type: 'error'
+          })
+          // this.logout()
+        })
     },
     onReset () {
       this.form = {
@@ -228,11 +227,8 @@ export default {
         rol: ''
       }
     },
-    showAlertSuccess () {
-      this.dismissCountDown = this.dismissSecs
-    },
-    countDownChanged (dismissCountDown) {
-      this.dismissCountDown = dismissCountDown
+    setError (input) {
+
     }
   }
 }

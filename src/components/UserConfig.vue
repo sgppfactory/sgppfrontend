@@ -94,6 +94,7 @@ export default {
       title: 'Configuración de usuario',
       errorMessage: '',
       menuComponent: undefined,
+      dismissCountDown: 0,
       form: {
         password: '',
         rePassword: '',
@@ -121,16 +122,16 @@ export default {
   created () {
     this.menuComponent = Menu
     user.getLogAuth((response) => {
-        if (response.data) {
-          this.logins = response.data.results
-        }
-      }).catch((error) => {
-        if (error.response) {
-          this.messageError = error.response.data.msg
-        } else {
-          this.messageError = 'Error indefinido'
-        }
-      })
+      if (response.data) {
+        this.logins = response.data.results
+      }
+    }).catch((error) => {
+      if (error.response) {
+        this.messageError = error.response.data.msg
+      } else {
+        this.messageError = 'Error indefinido'
+      }
+    })
   },
   computed: {
     formClass: function () {

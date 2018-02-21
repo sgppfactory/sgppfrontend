@@ -8,6 +8,8 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import Icon from 'vue-awesome/components/Icon'
 import * as VueGoogleMaps from 'vue2-google-maps'
+// import Notifications from 'vue-bs-notify'
+import Notifications from 'vue-notification'
 
 Vue.use(VueGoogleMaps, {
   load: {
@@ -16,6 +18,7 @@ Vue.use(VueGoogleMaps, {
   }
 })
 Vue.use(BootstrapVue)
+Vue.use(Notifications)
 
 Vue.config.productionTip = false
 
