@@ -207,14 +207,4 @@ li {
   display: inline-block;
   margin: 0 10px;
 }
-a:not(.btn) {
-  color: #42b983;
-  cursor: pointer;
-}
-.form-inline {
-  margin-bottom: 20px;
-}
-.form-inline-right {
-  margin-left: 55%;
-}
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <div :is="menuComponent"></div>
+    <app-menu></app-menu>
     <b-breadcrumb :items="bread"/>
     <b-container>
       <h1>{{title}}</h1>
@@ -113,14 +113,16 @@ import Menu from '@/components/Menu'
 import _ from 'underscore'
 
 export default {
-  name: 'Persons',
+  name: 'Addperson',
+  components: {
+    'app-menu': Menu
+  },
   data () {
     return {
       title: 'Alta de personas',
       showTooltip: false,
       errorMessage: '',
       targetTooltip: '',
-      menuComponent: undefined,
       bread: [{
         text: 'Inicio',
         href: '#/home'
@@ -155,7 +157,6 @@ export default {
     }
   },
   created () {
-    this.menuComponent = Menu
     rol.get()
       .then((rolData) => {
         rolData = rolData.data.message

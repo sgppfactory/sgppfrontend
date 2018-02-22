@@ -7,6 +7,7 @@ import UserConfig from '@/components/UserConfig'
 import PersonsHome from '@/components/Persons'
 import Addperson from '@/components/Addperson'
 import AppConfiguration from '@/components/AppConfiguration'
+import AddStructure from '@/components/AddStructure'
 
 Vue.use(Router)
 
@@ -47,6 +48,10 @@ export default new Router({
       path: '/config_system',
       name: 'AppConfiguration',
       component: AppConfiguration
+    }, {
+      path: '/addstructure',
+      name: 'AddStructure',
+      component: AddStructure
     }
   ]
 })
