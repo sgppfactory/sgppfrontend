@@ -1,17 +1,18 @@
 <template>
-  <div class="hello">
-    <div :is="menuComponent"></div>
+  <div>
+    <app-menu></app-menu>
     <b-container fluid>
       <h1>{{ title }}</h1>
       <b-row>
         <b-col sm="10">
           <b-form inline @submit="search">
-              <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar personas" v-model="searchParam" />
-              <!-- <b-button variant="primary"><icon name="search" /> Buscar</b-button> -->
+            <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar personas" v-model="searchParam" />
           </b-form>
         </b-col>
         <b-col sm="2">
-          <b-button variant="primary" href="#/addperson"><icon name="plus" height="10" /> Nueva Persona</b-button>
+          <b-button variant="primary" href="#/addperson">
+            <icon name="plus" height="10" /> Nueva Persona
+          </b-button>
         </b-col>
       </b-row>
       <b-table striped hover show-empty 
@@ -77,11 +78,13 @@ import persons from '../apiClients/persons'
 import Menu from '@/components/Menu'
 export default {
   name: 'Persons',
+  components: {
+    'app-menu': Menu
+  },
   data () {
     return {
       title: 'Agenda de personas',
       persons: [],
-      menuComponent: undefined,
       fields: [
         {label: 'Nombre', key: 'name', sortable: true},
         {label: 'Apellido', key: 'lastname', sortable: true},
@@ -105,9 +108,6 @@ export default {
     resultNegative: () => {
       return this.cantResults === 0
     }
-  },
-  created () {
-    this.menuComponent = Menu
   },
   methods: {
     logout () {

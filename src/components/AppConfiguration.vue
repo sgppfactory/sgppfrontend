@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div>
     <app-menu></app-menu>
     <!-- <div :is="menuComponent"></div> -->
     <b-container fluid>
@@ -24,15 +24,15 @@
                   </span>
                 </a>
                 <span>
-                  Opciones
+                - 
                   <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
-                    <icon name="info" height="10" />
+                    <icon name="info" height="13" />
                   </a>
-                  <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Eliminar nodo">
-                    <icon name="remove" height="10" />
+                  <a @click="toRemove=row.item.id" v-b-tooltip.hover v-b-modal.deleteModal title="Eliminar nodo">
+                    <icon name="remove" height="13" />
                   </a>
-                  <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Modificar nodo">
-                    <icon name="edit" height="10" />
+                  <a @click="" v-b-tooltip.hover title="Modificar nodo">
+                    <icon name="edit" height="13" />
                   </a>
                 </span>
               </div>
@@ -107,7 +107,6 @@ export default {
   created () {
     app.buildTree()
       .then((result) => {
-        console.log(result)
         if (result.status === 200) {
           this.appTree = result.data.message
         }
@@ -162,8 +161,8 @@ export default {
           // this.logout()
         })
     },
-    deleteNode () {
-      app.remove(this.toRemove)
+    deleteNode (id) {
+      app.remove(id)
         .then((result) => {
           // console.log(result)
           if (result.status === 200) {

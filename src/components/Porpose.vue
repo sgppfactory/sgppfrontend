@@ -1,21 +1,22 @@
 <template>
-  <div class="hello">
-    <div :is="menuComponent"></div>
+  <div>
+    <app-menu></app-menu>
     <b-container fluid>
       <h1>{{ title }}</h1>
       <b-row>
         <b-col sm="10">
           <b-form inline @submit="search">
-              <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar personas" v-model="searchParam" />
-              <!-- <b-button variant="primary"><icon name="search" /> Buscar</b-button> -->
+            <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchPerson" placeholder="Buscar propuestas o proyectos" v-model="searchParam" />
           </b-form>
         </b-col>
         <b-col sm="2">
-          <b-button variant="primary" href="#/addperson"><icon name="plus" height="10" /> Nueva Persona</b-button>
+          <b-button variant="primary" href="#/addporpose">
+            <icon name="plus" height="10" /> Nueva Propuesta
+          </b-button>
         </b-col>
       </b-row>
       <b-table striped hover show-empty 
-        :items="persons" 
+        :items="porposeprojects" 
         :fields="fields" 
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc" >
@@ -23,22 +24,18 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <!-- We use click.stop here to prevent 'sort-changed' or 'head-clicked' events -->
-          <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
-          <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
-          <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
-          <router-link :to="{ name: 'modperson', params: { personId: row.item.id }}" v-b-tooltip.hover title="Modificar persona"> 
+          <router-link :to="{ name: 'modporpose', params: { porposeId: row.item.id }}" v-b-tooltip.hover title="Modificar Propuesta / Proyecto"> 
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
           <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
-          <a @click="toRemove=row.item.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
+          <a @click="toRemove=row.item.id" v-b-tooltip.hover title="Borrar Propuesta / Proyecto" v-b-modal.deleteModal class="danger">
             <icon name="remove" />
           </a>
         </template>
-        <template slot="empty">¡Sin personas para mostrar!</template>
+        <template slot="empty">¡Sin propuestas o proyectos para mostrar!</template>
         <template slot="row-details" slot-scope="row">
           <b-card>
             <ul>
@@ -56,10 +53,10 @@
       <notifications group="success" />
       <notifications group="error" />
     </b-container>
-    <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
+    <b-modal id="deleteModal" v-model="show" title="Eliminar Propuesta">
       <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
       <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="deleteperson()">
+       <b-btn size="sm" variant="danger" @click="deleteporpose()">
          Eliminar
        </b-btn>
        <b-btn size="sm" variant="primary" @click="show=false">
@@ -73,21 +70,23 @@
 
 <script>
 import 'vue-awesome/icons'
-import persons from '../apiClients/persons'
+import porpose from '../apiClients/porpose'
 import Menu from '@/components/Menu'
 export default {
-  name: 'Persons',
+  name: 'PorposesProjects',
+  components: {
+    'app-menu': Menu
+  },
   data () {
     return {
-      title: 'Agenda de personas',
-      persons: [],
-      menuComponent: undefined,
+      title: 'Propuestas y Proyectos',
+      porposeprojects: [],
       fields: [
-        {label: 'Nombre', key: 'name', sortable: true},
-        {label: 'Apellido', key: 'lastname', sortable: true},
-        {label: 'Email', key: 'email', sortable: true},
-        {label: 'Teléfono', key: 'tel'},
-        {label: 'Usuario', key: 'username'},
+        {label: 'Título', key: 'title', sortable: true},
+        {label: 'Nodo', key: 'id_node', sortable: true},
+        {label: 'Etapa', key: 'id_stage', sortable: true},
+        {label: 'Estado', key: 'state'},
+        {label: 'Ciclo', key: 'id_cicle'},
         {label: 'Opciones', key: 'actions', 'class': 'text-center'}
       ],
       currentPage: 1,
@@ -106,9 +105,6 @@ export default {
       return this.cantResults === 0
     }
   },
-  created () {
-    this.menuComponent = Menu
-  },
   methods: {
     logout () {
       localStorage.jwt = ''
@@ -117,9 +113,9 @@ export default {
     search (page) {
       var params = this.searchParam ? {
         filter: [
-          {key: 'name', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
-          {key: 'lastname', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
-          {key: 'email', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
+          {key: 'title', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
+          {key: 'state', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
+          // {key: 'email', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
           // {key: 'username', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
         ]
       } : {}
@@ -128,9 +124,9 @@ export default {
         params.page = page
       }
 
-      persons.getFilter(params)
+      porpose.getFilter(params)
         .then((result) => {
-          this.persons = (result.status === 200)
+          this.porposeprojects = (result.status === 200)
           ? result.data.result
           : []
 
@@ -147,8 +143,8 @@ export default {
           // this.logout()
         })
     },
-    deleteperson () {
-      persons.remove(this.toRemove)
+    deleteporpose () {
+      porpose.remove(this.toRemove)
         .then((result) => {
           // console.log(result)
           if (result.status === 200) {
@@ -176,7 +172,7 @@ export default {
         })
     },
     showDetails (id) {
-      persons.get(id)
+      porpose.get(id)
         .then((result) => {
           if (result.status === 200) {
             this.toRemove = 0
@@ -206,5 +202,8 @@ ul {
 li {
   display: inline-block;
   margin: 0 10px;
+}
+.form-inline {
+  margin-bottom: 20px;
 }
 </style>

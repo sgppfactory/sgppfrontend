@@ -8,6 +8,7 @@ import PersonsHome from '@/components/Persons'
 import Addperson from '@/components/Addperson'
 import AppConfiguration from '@/components/AppConfiguration'
 import AddStructure from '@/components/AddStructure'
+import Porpose from '@/components/Porpose'
 
 Vue.use(Router)
 
@@ -52,6 +53,10 @@ export default new Router({
       path: '/addstructure',
       name: 'AddStructure',
       component: AddStructure
+    }, {
+      path: '/porposes_projects',
+      name: 'PorposesProjects',
+      component: Porpose
     }
   ]
 })
