@@ -58,6 +58,9 @@ export default {
       title: 'Bienvenido/a',
       msg: 'Qué sucede en ...?'
     }
+  },
+  beforeCreate () {
+    document.body.className = '';
   }
 }
 </script>

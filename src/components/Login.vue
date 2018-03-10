@@ -1,24 +1,26 @@
 <template>
   <div class="login">
-    <div align="center" class="title-login">
-      <h1>{{message}}</h1>
-    </div>
-    <div id="form-login">
-      <b-form @submit="login">
-        <b-form-group>
-          <b-form-input id="user" type="text" v-model="username" required placeholder="Nombre de usuario o email" v-bind:class="formClass">
-          </b-form-input>
-        </b-form-group>
-        <b-form-group>
-          <b-form-input id="password" type="password" v-model="password" required placeholder="Contraseña" v-bind:class="formClass">
-          </b-form-input>
-        </b-form-group>
-        <b-alert variant="danger" :show="showErrorMsg">
-          <b>{{messageError}}</b>
-        </b-alert>
-        <b-button type="submit" variant="primary">Ingresar</b-button>
-      </b-form>
-    </div>
+    <b-jumbotron>
+      <div align="center" class="title-login">
+        <h1>{{message}}</h1>
+      </div>
+      <div id="form-login">
+        <b-form @submit="login">
+          <b-form-group>
+            <b-form-input id="user" type="text" v-model="username" required placeholder="Nombre de usuario o email" v-bind:class="formClass">
+            </b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input id="password" type="password" v-model="password" required placeholder="Contraseña" v-bind:class="formClass">
+            </b-form-input>
+          </b-form-group>
+          <b-alert variant="danger" :show="showErrorMsg">
+            <b>{{messageError}}</b>
+          </b-alert>
+          <b-button type="submit" variant="primary">Ingresar</b-button>
+        </b-form>
+      </div>
+    </b-jumbotron>
   </div>
 </template>
 <!--   <div align="center">
@@ -36,6 +38,9 @@ export default {
       username: '',
       password: ''
     }
+  },
+  beforeCreate () {
+    document.body.className = 'login';
   },
   computed: {
     formClass: function () {
@@ -88,8 +93,18 @@ export default {
   .login {
     width: 50%;
     margin-left: 25%;
+    margin-top: 50px;
   }
   .title-login {
-    margin-bottom: 70px;
+    margin-bottom: 50px;
+  }
+
+</style>
+
+<style>
+  body.login {
+    background-image: url("/static/pp.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%;
   }
 </style>

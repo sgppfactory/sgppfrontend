@@ -15,5 +15,8 @@ export default {
   },
   getStages: (params) => {
     return basicClient('/stage', 'GET')
+  },
+  create: (params) => {
+    return basicClient('/implementation', 'POST', params)
   }
 }
