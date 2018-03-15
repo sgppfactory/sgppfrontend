@@ -60,7 +60,7 @@ export default {
     }
   },
   beforeCreate () {
-    document.body.className = '';
+    document.body.className = ''
   }
 }
 </script>

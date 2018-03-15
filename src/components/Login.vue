@@ -40,7 +40,7 @@ export default {
     }
   },
   beforeCreate () {
-    document.body.className = 'login';
+    document.body.className = 'login'
   },
   computed: {
     formClass: function () {
