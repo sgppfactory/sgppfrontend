@@ -90,7 +90,7 @@
                     :options="nodesFathers"
                     class="mb-2 mr-sm-2 mb-sm-0 form-control">
             </b-select>
-            <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="formNode.iscicle" value="true">
+            <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="formNode.iscicle">
               Nodo ciclo
             </b-form-checkbox>
             <b-input id="amount"
@@ -176,33 +176,36 @@
           <b-row>
             <b-col>
               <h4>Estructura (Aplicación y Nodos)</h4>
-              <ul>
-               <li class="itemApp">
-                  <div :style="{bold: isFolder(nodes)}">
+              <!-- <ul> -->
+               <div class="structure">
+                  <div style="font-weight: bold" class="itemApp">
                     <a @click="toggle">
                       {{formApp.name}} 
                       <span v-if="formApp.description"><i>
-                        ({{formApp.description.subtring(0,50)}})
+                        ({{formApp.description.substring(0,50)}})
                       </i></span>
                       <span v-if="isFolder(nodes)">
                         [<icon name="plus" height="10"/>]
                       </span>
                     </a>
                   </div>
-                  <ul v-show="true" v-if="isFolder(nodes)" v-for="level in levels" data-level="level">
+                  <ul>
                     <li class="item"
-                      v-for="node in getNodesByLevel(level)"
+                      v-for="node in nodes"
                       :model="node">
-                      <span :class="{bold: node.iscicle}">
-                        {{node.name}}
-                      </span> 
-                      <span v-if="node.description"><i>
-                        ({{node.description.subtring(0,50)}})
-                      </i></span>
+                      <div v-bind:style="{'margin-left': ubicationTree(node.level)}">
+                        <icon name="angle-right" height="15"/>
+                        <span :class="{bold: node.iscicle}">
+                          {{node.name}}
+                        </span> 
+                        <span v-if="node.description"><i>
+                          ({{node.description.substring(0,50)}})
+                        </i></span>
+                      </div>
                     </li>
                   </ul>
-                </li>
-              </ul>
+                </div>
+              <!-- </ul> -->
             </b-col>
             <b-col>
               <h4>Etapas</h4>
@@ -218,8 +221,8 @@
             </b-col>
           </b-row>
           <b-button @click="submit" variant="primary">Confirmar</b-button>
-          <b-button type="reset" variant="danger">Cancelar</b-button>
           <b-button @click="previousConfirm" type="button" variant="danger">Atrás</b-button>
+          <b-button type="reset" variant="danger">Cancelar</b-button>
         </div>
       </div>
       <!-- </b-form> -->
@@ -362,6 +365,9 @@ export default {
     // localStorage.dataConfig = '{"complete":false}'
   },
   methods: {
+    ubicationTree (level) {
+      return (level * 15) + 'px'
+    },
     filterBooleanTable (boolean) {
       return boolean ? 'Sí' : 'No'
     },
@@ -374,9 +380,6 @@ export default {
       this.step.nodes = true
       if (this.nodes.length > 0) {
         this.nodesNew = this.getNodesByLevel(0)
-        // _.filter(this.nodes, (item) => {
-        //   return item.level === 0
-        // })
       }
     },
     nextNode (ev) {
@@ -462,6 +465,7 @@ export default {
           type: 'error'
         })
       } else {
+        this.orderNodes()
         this.fieldsStage = _.clone(headerStage)
         this.step.stage = false
         this.step.confirm = true
@@ -478,14 +482,44 @@ export default {
         order: 0
       }
     },
+    orderNodes () {
+      if(this.levels.length > 1) {
+        let nodesOrder = []
+        let groupNodes = _.groupBy(this.nodes, 'level')
+      
+        _.each(groupNodes[0], (nodeF) => {
+          nodesOrder.push(nodeF)
+          if (!nodeF.iscicle) {
+            nodesOrder = nodesOrder.concat(this.findNodes(groupNodes, nodeF, 1))
+          }
+        })
+        
+        console.log(nodesOrder)
+        this.nodes = nodesOrder
+      }
+    },
+    findNodes (groupNodes, nodeF, level) {
+      var nodesOrder = []
+
+      _.each(groupNodes[level], (nodeC) => {
+        if (nodeF.id === nodeC.fatherNode) {
+          nodesOrder.push(nodeC)
+        }
+        if (!nodeC.iscicle && (this.levels.length - 1) > level) {
+          nodesOrder.concat(this.findNodes(groupNodes, nodeC, level + 1))
+        }
+      })
+
+      return nodesOrder
+    },
     submit (step) {
       let data = {
         nodes: this.nodes,
         stages: this.stages,
         appdata: this.formApp
       }
-      console.log(data)
-      configuration.post(data)
+
+      configuration.create(data)
         .then((result) => {
           if (result.status === 201) {
             this.$notify({
@@ -577,9 +611,9 @@ export default {
       }
     },
     toggle (ev) {
-      console.log(ev,$(ev.toElement).data())
+      console.log(ev, $(ev.toElement).data())
       if (this.isFolder) {
-        $(ev.toElement).parents('li.itemApp').children('ul').toggle()
+        $ (ev.toElement).parents('div.structure').children('ul').toggle()
       }
     },
     getNodesByLevel (level) {
@@ -664,5 +698,12 @@ li {
 }
 icon[name=plus], icon[name=minus] {
   cursor: pointer;
+}
+li.item {
+  display: block;
+  padding: 5px;
+}
+div.itemApp {
+  padding: 5px;
 }
 </style>
