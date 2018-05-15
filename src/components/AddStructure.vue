@@ -296,7 +296,7 @@ export default {
       formStage: {
         name: '',
         dateInit: '',
-        isproject: '',
+        isproject: false,
         order: 0
       },
       stages: [],
@@ -473,7 +473,7 @@ export default {
     },
     addStage () {
       this.formStage.order = this.stages.length + 1
-
+      this.formStage.dateInit += ('/' + (new Date()).getFullYear())
       this.stages.push(_.clone(this.formStage))
       this.formStage = {
         name: '',
