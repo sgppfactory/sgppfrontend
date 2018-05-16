@@ -113,6 +113,9 @@
             <template slot="iscicle" slot-scope="row">
               {{filterBooleanTable(row.item.iscicle)}}
             </template>
+            <template slot="amount" slot-scope="row">
+              {{getAmount(row.item.amount)}}
+            </template>
             <template slot="actions" slot-scope="row">
               <a @click="deleteNode(row.item.id)" v-b-tooltip.hover title="Borrar Nodo" class="danger">
                 <icon name="remove" />
@@ -521,11 +524,12 @@ export default {
 
       configuration.create(data)
         .then((result) => {
+          console.log(result)
           if (result.status === 201) {
             this.$notify({
               group: 'success',
               title: 'Ok!',
-              text: result.response.data.msg,
+              text: result.response.data.message,
               type: 'success'
             })
           }
@@ -533,7 +537,7 @@ export default {
           this.$notify({
             group: 'error',
             title: 'Ops!',
-            text: error.response.data.msg,
+            text: error.response.data.message,
             type: 'error'
           })
         })
@@ -611,15 +615,19 @@ export default {
       }
     },
     toggle (ev) {
-      console.log(ev, $(ev.toElement).data())
+      // console.log(ev, $(ev.toElement).data())
       if (this.isFolder) {
-        $ (ev.toElement).parents('div.structure').children('ul').toggle()
+        $(ev.toElement).parents('div.structure').children('ul').toggle()
       }
     },
     getNodesByLevel (level) {
       return _.filter(this.nodes, (item) => {
         return item.level === level
       })
+    },
+    getAmount (amount) {
+      // console.log(amount, Number(amount).formatMoney())
+      return amount && amount != '' ? Number(amount).formatMoney() : '-'
     }
   }
 }
