@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 // import HelloWorld from '@/components/HelloWorld'
 import Login from '@/components/Login'
+import Reports from '@/components/Reports'
+import Tasks from '@/components/Tasks'
 import Home from '@/components/Home'
 import UserConfig from '@/components/UserConfig'
 import PersonsHome from '@/components/Persons'
@@ -57,6 +59,14 @@ export default new Router({
       path: '/porposes_projects',
       name: 'PorposesProjects',
       component: Porpose
-    }
+    }, {
+      path: '/reports',
+      name: 'Reports',
+      component: Reports
+    }, {
+      path: '/tasks',
+      name: 'Tasks',
+      component: Tasks
+    } 
   ]
 })
