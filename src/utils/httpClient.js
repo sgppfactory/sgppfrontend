@@ -35,8 +35,3 @@ function basicClient (url, method, params) {
     // headers: header
   }, data, header))
 }
-
-// function getPrivateStartupBattles() {
-//   const url = `${BASE_URL}/api/battles/private`;
-//   return axios.get(url).then(response => response.data);
-// }

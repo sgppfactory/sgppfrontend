@@ -240,6 +240,7 @@ import 'vue-awesome/icons'
 import configuration from '../apiClients/configuration'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
+import {formatMoney, changeFormatDate} from '../utils/tools'
 import datePicker from 'vue-bootstrap-datetimepicker'
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css'
 
@@ -476,7 +477,9 @@ export default {
     },
     addStage () {
       this.formStage.order = this.stages.length + 1
-      this.formStage.dateInit += ('/' + (new Date()).getFullYear())
+      // this.formStage.dateInit += ('/' + (new Date()).getFullYear())
+      // console.log(changeFormatDate(this.formStage.dateInit))
+      // this.formStage.dateInit = changeFormatDate(this.formStage.dateInit)
       this.stages.push(_.clone(this.formStage))
       this.formStage = {
         name: '',
@@ -486,17 +489,17 @@ export default {
       }
     },
     orderNodes () {
-      if(this.levels.length > 1) {
+      if (this.levels.length > 1) {
         let nodesOrder = []
         let groupNodes = _.groupBy(this.nodes, 'level')
-      
+
         _.each(groupNodes[0], (nodeF) => {
           nodesOrder.push(nodeF)
           if (!nodeF.iscicle) {
             nodesOrder = nodesOrder.concat(this.findNodes(groupNodes, nodeF, 1))
           }
         })
-        
+
         console.log(nodesOrder)
         this.nodes = nodesOrder
       }
@@ -529,15 +532,16 @@ export default {
             this.$notify({
               group: 'success',
               title: 'Ok!',
-              text: result.response.data.message,
+              text: result.data.message,
               type: 'success'
             })
           }
         }).catch((error) => {
+          console.log(error)
           this.$notify({
             group: 'error',
             title: 'Ops!',
-            text: error.response.data.message,
+            text: error.data.msg,
             type: 'error'
           })
         })
@@ -627,7 +631,8 @@ export default {
     },
     getAmount (amount) {
       // console.log(amount, Number(amount).formatMoney())
-      return amount && amount != '' ? Number(amount).formatMoney() : '-'
+      console.log(amount, Number(amount))
+      return amount && amount !== '' ? formatMoney(amount) : '-'
     }
   }
 }

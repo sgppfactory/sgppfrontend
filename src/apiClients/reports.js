@@ -7,7 +7,7 @@ export default {
   remove: function () {
     return basicClient('/reports', 'DELETE')
   },
-  remove: function (id) {
-    return basicClient('/reports/'+id, 'GET')
+  findById: function (id) {
+    return basicClient('/reports/' + id, 'GET')
   }
 }
