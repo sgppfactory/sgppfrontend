@@ -11,7 +11,7 @@
         </b-col>
         <b-col sm="2">
           <b-button variant="primary" href="#/addperson">
-            <icon name="plus" height="10" /> Nueva Persona
+            <icon name="plus" height="10" /> Nueva Tarea
           </b-button>
         </b-col>
       </b-row>

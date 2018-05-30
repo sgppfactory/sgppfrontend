@@ -10,6 +10,7 @@ import PersonsHome from '@/components/Persons'
 import Addperson from '@/components/Addperson'
 import AppConfiguration from '@/components/AppConfiguration'
 import AddStructure from '@/components/AddStructure'
+import AddReport from '@/components/AddReport'
 import Porpose from '@/components/Porpose'
 
 Vue.use(Router)
@@ -63,6 +64,10 @@ export default new Router({
       path: '/reports',
       name: 'Reports',
       component: Reports
+    }, {
+      path: '/addreport',
+      name: 'AddReport',
+      component: AddReport
     }, {
       path: '/tasks',
       name: 'Tasks',

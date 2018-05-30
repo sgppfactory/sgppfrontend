@@ -527,7 +527,6 @@ export default {
 
       configuration.create(data)
         .then((result) => {
-          console.log(result)
           if (result.status === 201) {
             this.$notify({
               group: 'success',

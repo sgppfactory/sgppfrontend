@@ -137,14 +137,21 @@ export default {
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((error) => {
+          if (error.status === 404 || error.status === 500) {
+            message = "Error al procesar la petición, vuelva a intentarlo nuevamente más tarde"
+          } else if (error.status === 401) {
+            this.logout()
+          } else {
+            message = error.data.message
+          }
+          
           this.$notify({
             group: 'error',
             title: 'Ops!',
-            text: error.data.message,
+            text: message,
             type: 'error',
             position: 'bottom right'
           })
-          // this.logout()
         })
     },
     deleteperson () {

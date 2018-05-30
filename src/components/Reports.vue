@@ -1,4 +1,3 @@
-
 <template>
   <div>
     <app-menu></app-menu>
@@ -7,11 +6,11 @@
       <b-row>
         <b-col sm="10">
           <b-form inline @submit="search">
-            <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchReport" placeholder="Buscar reportes guardados" v-model="searchParam" />
+            <b-input class="mb-3 mr-sm-3 mb-sm-0" id="searchReport" placeholder="Buscar reportes guardados" v-model="searchParam" />
           </b-form>
         </b-col>
         <b-col sm="2">
-          <b-button variant="primary" href="#/addperson">
+          <b-button variant="primary" href="#/addreport">
             <icon name="plus" height="10" /> Nuevo Reporte
           </b-button>
         </b-col>
@@ -120,16 +119,7 @@ export default {
 
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
-        }).catch((error) => {
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.data.message,
-            type: 'error',
-            position: 'bottom right'
-          })
-          // this.logout()
-        })
+        }).catch(this.getErrorMessage)
     },
     deletereport () {
       reports.remove(this.toRemove)
@@ -147,17 +137,7 @@ export default {
             })
             this.search()
           }
-        }).catch((error) => {
-          // console.log(error)
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.data.message,
-            type: 'error',
-            position: 'bottom right'
-          })
-          // this.logout()
-        })
+        }).catch(this.getErrorMessage)
     },
     showDetails (id) {
       reports.get(id)
@@ -172,6 +152,23 @@ export default {
           console.log(error)
           // this.logout()
         })
+    },
+    getErrorMessage (result) {
+      if (error.status === 404 || error.status === 500) {
+        message = "Error al procesar la petición, vuelva a intentarlo nuevamente más tarde"
+      } else if (error.status === 401) {
+        this.logout()
+      } else {
+        message = error.data.message
+      }
+
+      this.$notify({
+        group: 'error',
+        title: 'Ops!',
+        text: error.data.message,
+        type: 'error',
+        position: 'bottom right'
+      })
     }
   }
 }
