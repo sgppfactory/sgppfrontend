@@ -7,10 +7,50 @@
       <b-form @submit="submit" @reset="onReset">
         <b-row>
           <b-col>
-            <b-form-group label="Nombres:" label-for="name">
+            <b-form-group label="Fecha:" label-for="name">
               <b-form-input id="name"
                             type="text"
                             v-model.trim="form.name"
+                            required
+                            placeholder="Ingrese el nombre"
+                            v-b-tooltip.click.blur.rightbottom 
+                            title="Campo requerido">
+              </b-form-input>
+            </b-form-group>
+            <b-form-group label="Duración:" label-for="name">
+              <b-form-input id="name"
+                            type="text"
+                            v-model.trim="form.name"
+                            required
+                            placeholder="Ingrese el nombre"
+                            v-b-tooltip.click.blur.rightbottom 
+                            title="Campo requerido">
+              </b-form-input>
+            </b-form-group>
+            <b-form-group label="Notas:" label-for="notes">
+              <b-form-input id="notes"
+                            type="text"
+                            v-model.trim="form.notes"
+                            required
+                            placeholder="Ingrese el nombre"
+                            v-b-tooltip.click.blur.rightbottom 
+                            title="Campo requerido">
+              </b-form-input>
+            </b-form-group>
+            <b-form-group label="Propuesta / Proyecto:" label-for="notes">
+              <b-form-input id="notes"
+                            type="text"
+                            v-model.trim="form.notes"
+                            required
+                            placeholder="Ingrese el nombre"
+                            v-b-tooltip.click.blur.rightbottom 
+                            title="Campo requerido">
+              </b-form-input>
+            </b-form-group>
+            <b-form-group label="Personas relacionadas:" label-for="id_user">
+              <b-form-input id="id_user"
+                            type="text"
+                            v-model.trim="form.notes"
                             required
                             placeholder="Ingrese el nombre"
                             v-b-tooltip.click.blur.rightbottom 
@@ -33,36 +73,39 @@
 
 <script>
 import 'vue-awesome/icons'
-import reports from '../apiClients/reports'
+import tasks from '../apiClients/tasks'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
 
 export default {
-  name: 'AddReport',
+  name: 'AddTask',
   components: {
     'app-menu': Menu
   },
   data () {
     return {
-      title: 'Realización de reportes',
+      title: 'Nueva Tarea',
+      showTooltip: false,
       errorMessage: '',
       targetTooltip: '',
       bread: [{
         text: 'Inicio',
         href: '#/home'
       }, {
-        text: 'Reportes',
-        href: '#/reports'
+        text: 'Tareas',
+        href: '#/tasks'
       }, {
-        text: 'Realización de reportes',
+        text: 'Nueva tarea',
         active: true
       }],
       form: {
-        name: '',
-        entity: '',
-        filterBy: ''
+        notes: '',
+        date_hour: '',
+        duration: '',
+        id_porpose_project: '',
+        id_user: ''
       },
-      optionsEntities: []
+      optionsRols: []
     }
   },
   computed: {
@@ -76,7 +119,7 @@ export default {
     }
   },
   created () {
-    reports.get()
+    tasks.get()
       .then((rolData) => {
         rolData = rolData.data.message
         if (rolData) {
@@ -102,7 +145,7 @@ export default {
         params.id = id
       }
 
-      reports.post(_.extend(this.form, params))
+      tasks.post(_.extend(this.form, params))
         .then((result) => {
           console.log(result)
           if (result.status === 201) {

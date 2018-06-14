@@ -14,49 +14,43 @@
       </b-row>
       <b-row class="container">
         <b-col>
-          <ul>
-            <li class="item" v-for="node in appTree">
-              <div :class="{bold: isFolder(node.children)}">
-                <a @click="toggle" @dblclick="changeType">
-                  {{node.name}} <span v-if="node.description"><i>({{node.description}})</i></span>
-                  <span v-if="isFolder(node.children)">
-                    [<icon name="minus" v-show="open" height="10"/><icon name="plus" v-show="close" height="10"/>]
-                  </span>
-                </a>
-                <span>
-                - 
-                  <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
-                    <icon name="info" height="13" />
-                  </a>
-                  <a @click="toRemove=row.item.id" v-b-tooltip.hover v-b-modal.deleteModal title="Eliminar nodo">
-                    <icon name="remove" height="13" />
-                  </a>
-                  <a @click="" v-b-tooltip.hover title="Modificar nodo">
-                    <icon name="edit" height="13" />
-                  </a>
+<!--           <div class="structure">
+            <div style="font-weight: bold" class="itemApp">
+              <a @click="toggle">
+                {{formApp.name}} 
+                <span v-if="formApp.description"><i>
+                  ({{formApp.description.substring(0,50)}})
+                </i></span>
+                <span v-if="isFolder(nodes)">
+                  [<icon name="plus" height="10"/>]
                 </span>
-              </div>
-              <ul v-show="open" v-if="isFolder(node.children)">
-                <li class="item"
-                  v-for="child in node.children"
-                  :model="child">
-                  {{child.name}}
-                </li>
-                <li class="item add" @click="addChild">
-                  <icon name="plus" height="10"/> Añadir Nodo
-                </li>
-                <li class="item add" addChild>
-                  <b-form-input id="nodename"
-                            type="text"
-                            v-model.trim="newnode.name"
-                            placeholder="Ingresar el nombre del nodo" />
-                  <b-button type="primary" variant="primary">
-                    <icon name="plus" height="10"/> Añadir Nodo
-                  </b-button>
-                </li>
-              </ul>
-            </li>
+              </a>
+            </div>
+            <ul>
+              <li class="item"
+                v-for="node in nodes"
+                :model="node">
+                <div v-bind:style="{'margin-left': ubicationTree(node.level)}">
+                  <icon name="angle-right" height="15"/>
+                  <span :class="{bold: node.iscicle}">
+                    {{node.name}}
+                  </span> 
+                  <span v-if="node.description"><i>
+                    ({{node.description.substring(0,50)}})
+                  </i></span>
+                </div>
+              </li>
+            </ul>
+          </div> -->
+          <ul id="tree">
+            <item
+              v-if="appTree.length > 0"
+              v-for="(app, index) in appTree"
+              class="item"
+              :model="app">
+            </item>
           </ul>
+
         </b-col>
       </b-row>
       <notifications group="success" />
@@ -65,7 +59,7 @@
     <b-modal id="deleteModal" v-model="show" title="Eliminar Nodo">
       <p class="my-2">¿Está seguro/a que desea realizar la siguiente acción?</p>
       <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="deleteNode()">
+       <b-btn size="sm" variant="danger" @click="deleteNode">
          Eliminar
        </b-btn>
        <b-btn size="sm" variant="primary" @click="show=false">
@@ -77,14 +71,53 @@
   <!-- </div> -->
 </template>
 
+
+
 <script>
 import 'vue-awesome/icons'
 import app from '../apiClients/configuration'
 import Menu from '@/components/Menu'
+import Item from '@/components/Item'
+
+// Vue.component('item', {
+//   template: '#item-template',
+//   props: {
+//     model: Object
+//   },
+//   data: function () {
+//     return {
+//       open: false
+//     }
+//   },
+//   computed: {
+//     isFolder: function () {
+//       return this.model.childrens &&
+//         this.model.childrens.length
+//     }
+//   },
+//   methods: {
+//     toggle: function () {
+//       if (this.isFolder) {
+//         this.open = !this.open
+//       }
+//     },
+//     changeType: function () {
+//       if (!this.isFolder) {
+//         Vue.set(this.model, 'childrens', [])
+//         this.addChild()
+//         this.open = true
+//       }
+//     },
+//     addChild: function () {
+
+//     }
+//   }
+// })
 
 export default {
   components: {
-    'app-menu': Menu
+    'app-menu': Menu,
+    'item': Item
   },
   name: 'AppConfiguration',
   data () {
@@ -99,50 +132,38 @@ export default {
       }
     }
   },
-  computed: {
-    close: () => {
-      return !this.open
-    }
-  },
   created () {
     app.buildTree()
       .then((result) => {
         if (result.status === 200) {
           this.appTree = result.data.message
+          console.log(this.appTree)
         }
-      }).catch((error) => {
-        // console.log(error)
-        this.$notify({
-          group: 'error',
-          title: 'Ops!',
-          text: error.response.data.msg,
-          type: 'error'
-        })
-        // this.logout()
-      })
+      }).catch(this.getErrorMessage)
   },
   methods: {
-    isFolder: (childrens) => {
-      return childrens &&
-        childrens.length
-    },
-    toggle: function () {
-      if (this.isFolder) {
-        this.open = !this.open
-      }
-    },
-    changeType: function () {
-      if (!this.isFolder) {
-        this.children = []
-        this.addChild()
-        this.open = true
-      }
-    },
-    addChild: function () {
-      // this.children.push({
-      //   name: 'new stuff'
-      // })
-    },
+    // isFolder: (childrens) => {
+    //   return childrens &&
+    //     childrens.length
+    // },
+    // toggle (ev) {
+    //   if (this.isFolder) {
+    //     // this.open = this.close
+    //     $(ev.toElement).parents('div.structure').children('ul').toggle()
+    //   }
+    // },
+    // changeType: function () {
+    //   if (!this.isFolder) {
+    //     this.children = []
+    //     this.addChild()
+    //     this.open = true
+    //   }
+    // },
+    // addChild: function () {
+    //   // this.children.push({
+    //   //   name: 'new stuff'
+    //   // })
+    // },
     logout () {
       localStorage.jwt = ''
       this.$router.push('login')
@@ -156,10 +177,7 @@ export default {
 
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
-        }).catch((error) => {
-          console.log(error)
-          // this.logout()
-        })
+        }).catch(this.getErrorMessage)
     },
     deleteNode (id) {
       app.remove(id)
@@ -170,24 +188,35 @@ export default {
             this.search()
             this.show = false
           }
-        }).catch((error) => {
-          console.log(error)
-          // this.logout()
-        })
+        }).catch(this.getErrorMessage)
     },
     showDetails (id) {
       app.get(id)
         .then((result) => {
           if (result.status === 200) {
             this.toRemove = 0
-            // console.log(result)
           } else {
 
           }
-        }).catch((error) => {
-          console.log(error)
-          // this.logout()
-        })
+        }).catch(this.getErrorMessage)
+    },
+    getErrorMessage (result) {
+      let message = ''
+      if (result.status === 404 || result.status === 500) {
+        message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
+      } else if (result.status === 401) {
+        this.logout()
+      } else {
+        message = result.data.message
+      }
+
+      this.$notify({
+        group: 'error',
+        title: 'Ops!',
+        text: message,
+        type: 'error',
+        position: 'bottom right'
+      })
     }
   }
 }

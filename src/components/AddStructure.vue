@@ -90,12 +90,12 @@
                     :options="nodesFathers"
                     class="mb-2 mr-sm-2 mb-sm-0 form-control">
             </b-select>
-            <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="formNode.iscicle">
+            <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="formNode.cicle">
               Nodo ciclo
             </b-form-checkbox>
             <b-input id="amount"
                     type="text"
-                    v-show="formNode.iscicle"
+                    v-show="formNode.cicle"
                     v-model.trim="formNode.amount"
                     placeholder="Ingresar monto"
                     class="mb-2 mr-sm-2 mb-sm-0 form-control">
@@ -110,8 +110,8 @@
             <template slot="HEAD_actions">
               Opciones
             </template>
-            <template slot="iscicle" slot-scope="row">
-              {{filterBooleanTable(row.item.iscicle)}}
+            <template slot="cicle" slot-scope="row">
+              {{filterBooleanTable(row.item.cicle)}}
             </template>
             <template slot="amount" slot-scope="row">
               {{getAmount(row.item.amount)}}
@@ -198,7 +198,7 @@
                       :model="node">
                       <div v-bind:style="{'margin-left': ubicationTree(node.level)}">
                         <icon name="angle-right" height="15"/>
-                        <span :class="{bold: node.iscicle}">
+                        <span :class="{bold: node.cicle}">
                           {{node.name}}
                         </span> 
                         <span v-if="node.description"><i>
@@ -240,7 +240,7 @@ import 'vue-awesome/icons'
 import configuration from '../apiClients/configuration'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
-import {formatMoney, changeFormatDate} from '../utils/tools'
+import {formatMoney} from '../utils/tools'
 import datePicker from 'vue-bootstrap-datetimepicker'
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css'
 
@@ -276,7 +276,7 @@ export default {
       }],
       fields: [
         {label: 'Nombre', key: 'name', sortable: true},
-        {label: 'Es ciclo', key: 'iscicle', sortable: true},
+        {label: 'Es ciclo', key: 'cicle', sortable: true},
         {label: 'Descripción', key: 'description'},
         {label: 'Monto', key: 'amount'},
         {label: 'Opciones', key: 'actions', 'class': 'text-center'}
@@ -290,7 +290,7 @@ export default {
         id: null,
         name: '',
         description: '',
-        iscicle: false,
+        cicle: false,
         amount: '',
         level: 0,
         fatherNode: ''
@@ -397,7 +397,7 @@ export default {
       } else {
         this.nodesFathers = _.map(
           _.filter(this.nodesNew, (item) => {
-            return !item.iscicle
+            return !item.cicle
           }), (item) => {
           return {
             value: item.id,
@@ -449,7 +449,7 @@ export default {
           id: null,
           name: '',
           description: '',
-          iscicle: false,
+          cicle: false,
           amount: '',
           level: this.formNode.level
         }
@@ -495,7 +495,7 @@ export default {
 
         _.each(groupNodes[0], (nodeF) => {
           nodesOrder.push(nodeF)
-          if (!nodeF.iscicle) {
+          if (!nodeF.cicle) {
             nodesOrder = nodesOrder.concat(this.findNodes(groupNodes, nodeF, 1))
           }
         })
@@ -511,7 +511,7 @@ export default {
         if (nodeF.id === nodeC.fatherNode) {
           nodesOrder.push(nodeC)
         }
-        if (!nodeC.iscicle && (this.levels.length - 1) > level) {
+        if (!nodeC.cicle && (this.levels.length - 1) > level) {
           nodesOrder.concat(this.findNodes(groupNodes, nodeC, level + 1))
         }
       })
@@ -587,7 +587,7 @@ export default {
         id: null,
         name: '',
         description: '',
-        iscicle: false,
+        cicle: false,
         amount: '',
         level: this.formNode.level,
         fatherNode: ''
@@ -629,8 +629,7 @@ export default {
       })
     },
     getAmount (amount) {
-      // console.log(amount, Number(amount).formatMoney())
-      console.log(amount, Number(amount))
+      // console.log(amount, Number(amount))
       return amount && amount !== '' ? formatMoney(amount) : '-'
     }
   }

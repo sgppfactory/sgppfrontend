@@ -154,18 +154,19 @@ export default {
         })
     },
     getErrorMessage (result) {
-      if (error.status === 404 || error.status === 500) {
-        message = "Error al procesar la petición, vuelva a intentarlo nuevamente más tarde"
-      } else if (error.status === 401) {
+      let message = ''
+      if (result.status === 404 || result.status === 500) {
+        message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
+      } else if (result.status === 401) {
         this.logout()
       } else {
-        message = error.data.message
+        message = result.data.message
       }
 
       this.$notify({
         group: 'error',
         title: 'Ops!',
-        text: error.data.message,
+        text: message,
         type: 'error',
         position: 'bottom right'
       })
