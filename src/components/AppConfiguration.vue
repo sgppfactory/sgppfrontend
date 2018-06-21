@@ -14,39 +14,12 @@
       </b-row>
       <b-row class="container">
         <b-col>
-<!--           <div class="structure">
-            <div style="font-weight: bold" class="itemApp">
-              <a @click="toggle">
-                {{formApp.name}} 
-                <span v-if="formApp.description"><i>
-                  ({{formApp.description.substring(0,50)}})
-                </i></span>
-                <span v-if="isFolder(nodes)">
-                  [<icon name="plus" height="10"/>]
-                </span>
-              </a>
-            </div>
-            <ul>
-              <li class="item"
-                v-for="node in nodes"
-                :model="node">
-                <div v-bind:style="{'margin-left': ubicationTree(node.level)}">
-                  <icon name="angle-right" height="15"/>
-                  <span :class="{bold: node.iscicle}">
-                    {{node.name}}
-                  </span> 
-                  <span v-if="node.description"><i>
-                    ({{node.description.substring(0,50)}})
-                  </i></span>
-                </div>
-              </li>
-            </ul>
-          </div> -->
           <ul id="tree">
             <item
               v-if="appTree.length > 0"
               v-for="(app, index) in appTree"
               class="item"
+              :key="app.id"
               :model="app">
             </item>
           </ul>
@@ -59,7 +32,7 @@
     <b-modal id="deleteModal" v-model="show" title="Eliminar Nodo">
       <p class="my-2">¿Está seguro/a que desea realizar la siguiente acción?</p>
       <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="deleteNode">
+       <b-btn size="sm" variant="danger" @click="remove">
          Eliminar
        </b-btn>
        <b-btn size="sm" variant="primary" @click="show=false">
@@ -79,41 +52,6 @@ import app from '../apiClients/configuration'
 import Menu from '@/components/Menu'
 import Item from '@/components/Item'
 
-// Vue.component('item', {
-//   template: '#item-template',
-//   props: {
-//     model: Object
-//   },
-//   data: function () {
-//     return {
-//       open: false
-//     }
-//   },
-//   computed: {
-//     isFolder: function () {
-//       return this.model.childrens &&
-//         this.model.childrens.length
-//     }
-//   },
-//   methods: {
-//     toggle: function () {
-//       if (this.isFolder) {
-//         this.open = !this.open
-//       }
-//     },
-//     changeType: function () {
-//       if (!this.isFolder) {
-//         Vue.set(this.model, 'childrens', [])
-//         this.addChild()
-//         this.open = true
-//       }
-//     },
-//     addChild: function () {
-
-//     }
-//   }
-// })
-
 export default {
   components: {
     'app-menu': Menu,
@@ -124,12 +62,7 @@ export default {
     return {
       title: 'Configuración del sistema',
       appTree: [],
-      toRemove: 0,
-      show: false,
-      open: false,
-      newnode: {
-        name: ''
-      }
+      show: false
     }
   },
   created () {
@@ -137,69 +70,25 @@ export default {
       .then((result) => {
         if (result.status === 200) {
           this.appTree = result.data.message
-          console.log(this.appTree)
         }
       }).catch(this.getErrorMessage)
   },
   methods: {
-    // isFolder: (childrens) => {
-    //   return childrens &&
-    //     childrens.length
-    // },
-    // toggle (ev) {
-    //   if (this.isFolder) {
-    //     // this.open = this.close
-    //     $(ev.toElement).parents('div.structure').children('ul').toggle()
-    //   }
-    // },
-    // changeType: function () {
-    //   if (!this.isFolder) {
-    //     this.children = []
-    //     this.addChild()
-    //     this.open = true
-    //   }
-    // },
-    // addChild: function () {
-    //   // this.children.push({
-    //   //   name: 'new stuff'
-    //   // })
-    // },
     logout () {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    buildTree (params) {
-      app.getConfig(params)
-        .then((result) => {
-          this.persons = (result.status === 200)
-          ? result.data.result
-          : []
+    // buildTree (params) {
+    //   app.getConfig(params)
+    //     .then((result) => {
+    //       this.persons = (result.status === 200)
+    //       ? result.data.result
+    //       : []
 
-          this.cantPages = result.data.pages
-          this.cantResults = result.data.total
-        }).catch(this.getErrorMessage)
-    },
-    deleteNode (id) {
-      app.remove(id)
-        .then((result) => {
-          // console.log(result)
-          if (result.status === 200) {
-            this.toRemove = 0
-            this.search()
-            this.show = false
-          }
-        }).catch(this.getErrorMessage)
-    },
-    showDetails (id) {
-      app.get(id)
-        .then((result) => {
-          if (result.status === 200) {
-            this.toRemove = 0
-          } else {
-
-          }
-        }).catch(this.getErrorMessage)
-    },
+    //       this.cantPages = result.data.pages
+    //       this.cantResults = result.data.total
+    //     }).catch(this.getErrorMessage)
+    // },
     getErrorMessage (result) {
       let message = ''
       if (result.status === 404 || result.status === 500) {
@@ -217,25 +106,27 @@ export default {
         type: 'error',
         position: 'bottom right'
       })
+    },
+    remove: function (id) {
+      app.remove(id)
+        .then((result) => {
+          // console.log(result)
+          if (result.status === 200) {
+            this.toRemove = 0
+            this.search()
+            this.show = false
+          }
+        }).catch(this.getErrorMessage)
     }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h1, h2 {
   font-weight: normal;
   margin: 15px 0;
 }
-/*ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}*/
 .item {
   /*cursor: pointer;*/
   line-height: 30px;

@@ -66,13 +66,13 @@ export default {
         //   title: 'event1',
         //   start: moment().hours(12).minutes(0),
         // },
-        {
-          id: 2,
-          title: 'event2',
-          start: moment().add(-1, 'days'),
-          end: moment().add(1, 'days'),
-          allDay: true,
-        },
+        // {
+        //   id: 2,
+        //   title: 'event2',
+        //   start: moment().add(-1, 'days'),
+        //   end: moment().add(1, 'days'),
+        //   allDay: true,
+        // }
         // {
         //   id: 3,
         //   title: 'event3',
@@ -84,11 +84,11 @@ export default {
 
       config: {
         eventClick: (event) => {
-          this.selected = event;
+          this.selected = event
         },
         locale: 'es'
       },
-      selected: {},
+      selected: {}
     }
   },
   methods: {
@@ -96,8 +96,8 @@ export default {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    refreshEvents() {
-      this.$refs.calendar.$emit('refetch-events');
+    refreshEvents () {
+      this.$refs.calendar.$emit('refetch-events')
     },
 
     // removeEvent() {
@@ -105,8 +105,8 @@ export default {
     //   this.selected = {};
     // },
 
-    eventSelected(event) {
-      this.selected = event;
+    eventSelected (event) {
+      this.selected = event
       tasks.get(event)
         .then((result) => {
           console.log(result)
@@ -117,9 +117,9 @@ export default {
           }
         }).catch(this.getErrorMessage)
     },
-
-    eventCreated(...test) {
-      console.log(test);
+    eventCreated (...args) {
+    // eventCreated (/**/) {
+      console.log(args)
     },
     getErrorMessage (result) {
       let message = ''
@@ -141,24 +141,24 @@ export default {
     }
   },
   computed: {
-    eventSources() {
-      const self = this;
+    eventSources () {
+      const self = this
       return [
         {
-          events(start, end, timezone, callback) {
+          events (start, end, timezone, callback) {
             setTimeout(() => {
-              callback(self.events.filter(() => Math.random() > 0.5));
-            }, 1000);
+              callback(self.events.filter(() => Math.random() > 0.5))
+            }, 1000)
           }
         },
         {
-          events(start, end, timezone, callback) {
+          events (start, end, timezone, callback) {
             let params = {start: start, end: end}
             tasks.getFilter(params)
               .then((response) => {
                 console.log(response.data)
                 self.cantResults = response.data.total
-                if (result.status === 200) {
+                if (response.status === 200) {
                   callback(response.data.data)
                 }
               }).catch(self.getErrorMessage)
@@ -167,8 +167,8 @@ export default {
           },
           color: 'red'
         }
-      ];
-    },
+      ]
+    }
   }
 }
 </script>

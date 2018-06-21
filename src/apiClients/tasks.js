@@ -12,5 +12,5 @@ export default {
   },
   post: function (params) {
     return basicClient('/person', 'POST', params)
-  },
+  }
 }
