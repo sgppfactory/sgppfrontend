@@ -1,8 +1,8 @@
 <template>
   <li>
-    <div :class="{bold: isFolder}">
-      <a @click="toggle" @dblclick="changeType" v-on:click="open = !open">
-        {{model.name}} 
+    <div>
+      <a @click="toggle" v-on:click="open = !open" :class="{[$style.bold]: isFolder}">
+        <span><icon name="mouse-pointer" height="10"/> - {{model.name}}</span> 
         <span v-if="model.description"><i>({{model.description}})</i></span>
         <span v-if="isFolder" @click="toggle">
           [<icon name="minus" v-show="open" height="10" title="Mostrar menos"/><icon name="plus" v-show="!open" height="10" title="Mostrar más"/>]
@@ -13,16 +13,28 @@
       </a>
       <span>
       - 
-        <a @click.stop="details" v-b-tooltip.hover title="Más información">
+        <a @click="detailsNode" v-b-tooltip.hover title="Más información">
           <icon name="info" height="13" />
         </a>
-        <a @click="remove" v-b-tooltip.hover v-b-modal.deleteModal title="Eliminar nodo">
+        <a @click="showDeleteModal=true" v-b-tooltip.hover title="Eliminar nodo">
           <icon name="remove" height="13" />
         </a>
         <a @click="update" v-b-tooltip.hover title="Modificar nodo">
           <icon name="edit" height="13" />
         </a>
       </span>
+      <detail-modal :dataToDisplay="detailNode" :show="showDetailVar"></detail-modal>
+      <b-modal v-model="showDeleteModal" title="Eliminar Nodo">
+        <p class="my-2">¿Está seguro/a que desea realizar la siguiente acción?</p>
+        <div slot="modal-footer" class="w-100 text-right">
+         <b-btn size="sm" variant="danger" @click="removeNode">
+           Eliminar
+         </b-btn>
+         <b-btn size="sm" variant="primary" @click="showDeleteModal=false">
+           Cancelar
+         </b-btn>
+       </div>
+      </b-modal>
     </div>
     <ul v-if="isFolder" v-show="open">
       <item class="item"
@@ -32,7 +44,7 @@
         :model="child">
       </item>
       <li class="item add" @click="toggleAddChild">
-        [<icon name="minus" v-show="openAddChild" height="10"/><icon name="plus" v-show="!openAddChild" height="10"/>] Añadir Nodo
+        <icon name="minus" v-show="openAddChild" height="10"/><icon name="plus" v-show="!openAddChild" height="10"/> Añadir Nodo
       </li>
       <li class="item addForm" v-show="openAddChild">
         <b-form inline>
@@ -51,19 +63,35 @@
       <li class="item"
         v-for="(step, index) in steps"
         :index="index"
-        :key="child.id"
+        :key="step.id"
         :model="step">
+        {{step.name}}
       </li>
       <li class="item add" @click="toggleAddStage">
-        [<icon name="minus" v-show="openAddStage" height="10"/><icon name="plus" v-show="!openAddStage" height="10"/>] Añadir Etapa
+        <icon name="minus" v-show="openAddStage" height="10"/><icon name="plus" v-show="!openAddStage" height="10"/> Añadir Etapa
       </li>
       <li class="item addStage" v-show="openAddStage">
         <b-form inline>
-          <b-form-input id="stepname"
+          <b-input id="stepname"
                     type="text"
-                    class="mb-2 mr-sm-2 mb-sm-0"
                     v-model.trim="newStep.name"
-                    placeholder="Ingresar el nombre de la etapa" />
+                    required
+                    class="mb-2 mr-sm-2 mb-sm-0"
+                    placeholder="Ingrese el nombre"
+                    v-b-tooltip.click.blur.rightbottom 
+                    title="Nombre Etapa">
+          </b-input>
+          <date-picker v-model="newStep.dateInit" 
+                    required
+                    placeholder="Ingresar fecha de comienzo"
+                    title="Campo requerido"
+                    v-b-tooltip.click.blur.rightbottom 
+                    :config="{format: 'DD/MM',useCurrent: false, locale: 'es'}"
+                    class="mb-2 mr-sm-2 mb-sm-0 form-control">
+          </date-picker>
+          <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="newStep.isproject" value="true">
+            Tipo proyecto
+          </b-form-checkbox>
           <b-button type="primary" variant="primary" @click="addStep">
             <icon name="plus" height="10"/> Añadir Etapa
           </b-button>
@@ -72,29 +100,48 @@
     </ul>
   </li>
 </template>
+
+<style module>
+.bold {
+  font-weight: bold;
+}
+</style>
+
 <script>
 import app from '../apiClients/configuration'
 import node from '../apiClients/node'
+import DetailModal from '@/components/Details'
 import Vue from 'vue'
+import datePicker from 'vue-bootstrap-datetimepicker'
+import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css'
 
 export default {
   name: 'Item',
   props: {
     model: Object
   },
+  components: {
+    'detail-modal': DetailModal,
+    datePicker
+  },
   data () {
     return {
-      open: true,
+      open: false,
       toRemove: 0,
       newnode: {
         name: ''
       },
       newStep: {
-        name: ''
+        name: '',
+        isproject: false,
+        dateInit: ''
       },
       steps: [],
       openAddChild: false,
-      openAddStage: false
+      openAddStage: false,
+      showDetailVar: false,
+      detailNode: 'Algo',
+      showDeleteModal: false
     }
   },
   computed: {
@@ -137,40 +184,41 @@ export default {
       //   }).catch(this.getErrorMessage)
     },
     toggleSteps: function (idNode) {
+      console.log(idNode)
       node.getStages(idNode)
         .then((result) => {
           if (result.status === 200) {
             this.steps = result.data.message
           }
-          // else {
-
-          // }
+          console.log(this.steps)
         }).catch(this.getErrorMessage)
     },
     addStep: function () {
-
+      // this.model.stages.push({
+      //   name: newnode.name
+      // })
     },
     update: function () {
 
     },
-    details: function (id) {
-      app.get(id)
+    detailsNode: function () {
+      // console.log(this.model.id)
+      this.showDetailVar = true
+      node.get(this.model.id)
         .then((result) => {
           if (result.status === 200) {
-            this.toRemove = 0
+            console.log(result)
           } else {
 
           }
         }).catch(this.getErrorMessage)
     },
-    remove: function (id) {
-      app.remove(id)
+    removeNode: function () {
+      node.remove(this.model.id)
         .then((result) => {
-          // console.log(result)
           if (result.status === 200) {
-            this.toRemove = 0
-            this.search()
-            this.show = false
+            this.modal = {}
+            this.showDeleteModal = false
           }
         }).catch(this.getErrorMessage)
     }
@@ -184,20 +232,20 @@ h1, h2 {
   margin: 15px 0;
 }
 ul {
-  /*list-style-type: none;*/
+  list-style-type: none;
   padding: 0;
 }
 li {
   /*display: inline-block;*/
-  margin: 0 10px;
+  margin: 0 15px;
 }
 a {
   color: #42b983;
 }
-.addForm {
+/*.addForm {
   width: 400px;
 }
 .addStage {
   width: 400px; 
-}
+}*/
 </style>

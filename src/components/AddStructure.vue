@@ -236,7 +236,7 @@
 </template>
 
 <script>
-import 'vue-awesome/icons'
+// import 'vue-awesome/icons'
 import configuration from '../apiClients/configuration'
 import Menu from '@/components/Menu'
 import _ from 'underscore'

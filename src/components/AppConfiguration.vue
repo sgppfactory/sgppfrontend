@@ -132,6 +132,9 @@ h1, h2 {
   line-height: 30px;
   margin: 10px;
 }
+ul {
+  list-style-type: none;
+}
 .bold {
   font-weight: bold;
 }
@@ -139,5 +142,8 @@ ul {
   padding-left: 1em;
   line-height: 1.5em;
   list-style-type: dot;
+}
+#tree {
+  padding-left: 0px;
 }
 </style>
