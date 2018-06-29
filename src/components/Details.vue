@@ -1,8 +1,12 @@
 <template>
-  <b-modal id="detailsModal" v-model="show" title="Detalle Nodo">
-    <p class="my-2">{{message}}</p>
+  <b-modal :id="idModal" v-model="showDetailsComp" :title="titleHeader">
+    <!-- <p class="my-2"> -->
+    <ul>
+      <li v-for="(value, key) in dataToDisplay" :key="key"><b>{{ key }}</b>: {{ value}}</li>
+    </ul>
+    <!-- </p> -->
     <div slot="modal-footer" class="w-100 text-right">
-     <b-btn size="sm" variant="primary" @click="show=false">
+     <b-btn size="sm" variant="primary" @click="dataToDisplay={}">
        Aceptar
      </b-btn>
    </div>
@@ -10,22 +14,22 @@
 </template>
 
 <script>
+import _ from 'underscore'
+
 export default {
   name: 'Details',
   props: {
-    message: String,
-    show: Boolean
+    titleHeader: String,
+    dataToDisplay: Object,
+    idModal: String
   },
   data () {
     return {}
   },
   computed: {
-    isFolder: function () {
-      return this.model &&
-        this.model.childrens &&
-        this.model.childrens.length
+    showDetailsComp: function () {
+      return !_.isEmpty(this.dataToDisplay)
     }
-  },
-  methods: {}
+  }
 }
 </script>
