@@ -3,8 +3,8 @@ import _ from 'underscore'
 import config from '../../config'
 // const BASE_URL = 'http://localhost:3000';
 
-// export {getPublicStartupBattles, getPrivateStartupBattles};
 export {basicClient}
+// console.log(Vue.config, process.API_URL)
 
 function basicClient (url, method, params) {
   var data

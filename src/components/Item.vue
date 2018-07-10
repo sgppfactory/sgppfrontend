@@ -213,7 +213,7 @@
 </style>
 
 <script>
-import app from '../apiClients/configuration'
+// import app from '../apiClients/configuration'
 import node from '../apiClients/node'
 import DetailModal from '@/components/Details'
 import Vue from 'vue'
@@ -265,7 +265,7 @@ export default {
         this.model.childrens.length
     },
     detailName: function () {
-      return this.model ? this.model.name.toLowerCase().replace(" ","-") : ""
+      return this.model ? this.model.name.toLowerCase().replace(' ', '-') : ''
     }
   },
   methods: {
@@ -326,20 +326,20 @@ export default {
 
     },
     detailsNode: function () {
-      console.log("pepito", this.model.id)
+      console.log('pepito', this.model.id)
       node.get(this.model.id)
         .then((result) => {
           if (result.status === 200) {
             this.detailNode = result.data.message
             this.showDetailVar = true
           } else {
-            this.getErrorMessage("Error al procesar el pedido, intente nuevamente")
+            this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
           }
         }).catch(this.getErrorMessage)
     },
     removeNode: function () {
       console.log(this.model.id)
-        this.showDeleteModal = false
+      this.showDeleteModal = false
       node.remove(this.model.id)
         .then((result) => {
           if (result.status === 200) {
