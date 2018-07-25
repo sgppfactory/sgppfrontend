@@ -66,12 +66,17 @@ export default {
     }
   },
   created () {
+    var loader = this.$loading.show();
     app.buildTree()
       .then((result) => {
+        loader.hide()
         if (result.status === 200) {
           this.appTree = result.data.message
         }
-      }).catch(this.getErrorMessage)
+      }).catch((error) => {
+        loader.hide()
+        this.getErrorMessage(error)
+      })
   },
   methods: {
     logout () {

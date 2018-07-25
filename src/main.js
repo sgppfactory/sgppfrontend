@@ -10,6 +10,8 @@ import Icon from 'vue-awesome/components/Icon'
 import * as VueGoogleMaps from 'vue2-google-maps'
 import Notifications from 'vue-notification'
 import json from '../credentials/data.json'
+import 'vue-loading-overlay/dist/vue-loading.min.css'
+import Loading from 'vue-loading-overlay'
 
 Vue.use(VueGoogleMaps, {
   load: {
@@ -19,6 +21,7 @@ Vue.use(VueGoogleMaps, {
 })
 Vue.use(BootstrapVue)
 Vue.use(Notifications)
+Vue.use(Loading)
 
 Vue.config.productionTip = process.env.NODE_ENV === '"production"'
 

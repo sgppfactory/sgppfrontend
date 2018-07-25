@@ -86,35 +86,39 @@
         :key="child.id"
         :model="child">
       </item>
+      <!-- AGREGAR NODO - FORMULARIO -->
       <li class="item add">
-        <b-button type="primary" size="sm" variant="outline-success" @click="toggleAddChild">
-          <icon name="minus" v-show="openAddChild" height="10"/><icon name="plus" v-show="!openAddChild" height="10"/> Añadir Nodo
-        </b-button>
-      </li>
-      <li class="item addForm" v-show="openAddChild">
-        <!-- AGREGAR NODO - FORMULARIO -->
-        <b-form inline>
-          <b-form-input id="nodename"
-                    type="text"
-                    size="sm" 
-                    class="mb-2 mr-sm-2 mb-sm-0"
-                    v-model.trim="newnode.name"
-                    required
-                    placeholder="Nombre del nodo" />
-          <b-form-checkbox size="sm" class="mb-2 mr-sm-2 mb-sm-0" v-model="newnode.cicle" value="true">
-            Tipo Ciclo
-          </b-form-checkbox>
-          <b-form-input id="amountnode"
-                    type="text"
-                    size="sm" 
-                    class="mb-2 mr-sm-2 mb-sm-0"
-                    v-model.trim="newnode.amount"
-                    v-show="newnode.cicle"
-                    placeholder="Monto" />
-          <b-button type="primary" size="sm" variant="primary" @click="addChild">
-            <icon name="plus" height="10"/> Añadir Nodo
-          </b-button>
-        </b-form>
+        <b-row>
+          <b-col cols="1">
+            <b-button type="primary" size="sm" variant="outline-success" @click="toggleAddChild">
+              <icon name="minus" v-show="openAddChild" height="10"/><icon name="plus" v-show="!openAddChild" height="10"/> <span v-show="!openAddChild">Añadir Nodo</span><span v-show="openAddChild"> >> </span>
+            </b-button>
+          </b-col>
+          <b-col cols="11">
+            <b-form inline v-show="openAddChild">
+              <b-form-input id="nodename"
+                        type="text"
+                        size="sm" 
+                        class="mb-2 mr-sm-2 mb-sm-0"
+                        v-model.trim="newnode.name"
+                        required
+                        placeholder="Nombre del nodo" />
+              <b-form-checkbox size="sm" class="mb-2 mr-sm-2 mb-sm-0" v-model="newnode.cicle" value="true">
+                Tipo Ciclo
+              </b-form-checkbox>
+              <b-form-input id="amountnode"
+                        type="text"
+                        size="sm" 
+                        class="mb-2 mr-sm-2 mb-sm-0"
+                        v-model.trim="newnode.amount"
+                        v-show="newnode.cicle"
+                        placeholder="Monto" />
+              <b-button type="primary" size="sm" variant="primary" @click="addChild">
+                <icon name="plus" height="10"/> Añadir Nodo
+              </b-button>
+            </b-form>
+          </b-col>
+        </b-row>
       </li>
     </ul>
     <ul v-else v-show="open">
@@ -125,7 +129,7 @@
         :model="step">
         <icon name="asterisk" height="10" v-b-tooltip.hover title="Etapas"/> {{step.order}} {{step.name}}
         <span> | 
-          <a @click="showDeleteModal=true" v-b-tooltip.hover title="Eliminar etapa">
+          <a @click="showDeleteModalStage=true" v-b-tooltip.hover title="Eliminar etapa">
             <icon name="remove" height="13" />
           </a>
           <a @click="showUpdateStage=true" v-b-tooltip.hover title="Modificar etapa">
@@ -156,8 +160,8 @@
          </div>
         </b-modal>
         <!-- BAJA DE ETAPA -->
-        <b-modal v-model="showDeleteModal" title="Eliminar Nodo">
-          <p class="my-1">Va a eliminar el nodo "{{model.name}}".</p>
+        <b-modal v-model="showDeleteModalStage" title="Eliminar Nodo">
+          <p class="my-1">Va a eliminar la etapa "{{model.name}}".</p>
           <p class="my-1">¿Está seguro/a que desea realizar la siguiente acción?</p>
           <div slot="modal-footer" class="w-100 text-right">
            <b-btn size="sm" variant="danger" @click="removeNode">
@@ -169,38 +173,49 @@
          </div>
         </b-modal>
       </li>
+      <!-- ALTA ETAPA -->
       <li class="item add">
-        <b-button type="primary" size="sm" variant="outline-success" @click="toggleAddStage">
-          <icon name="minus" v-show="openAddStage" height="10"/><icon name="plus" v-show="!openAddStage" height="10"/> Añadir Etapa
-        </b-button>
-      </li>
-      <li class="item addStage" v-show="openAddStage">
-        <b-form inline>
-          <b-input id="stepname"
-                    type="text"
-                    size="sm"
-                    v-model.trim="newStep.name"
-                    required
-                    class="mb-2 mr-sm-2 mb-sm-0"
-                    placeholder="Ingrese el nombre"
-                    v-b-tooltip.click.blur.rightbottom 
-                    title="Nombre Etapa">
-          </b-input>
-          <date-picker v-model="newStep.dateInit" 
-                    required
-                    placeholder="Ingresar fecha de comienzo"
-                    title="Campo requerido"
-                    v-b-tooltip.click.blur.rightbottom 
-                    :config="{format: 'DD/MM',useCurrent: false, locale: 'es'}"
-                    class="mb-2 mr-sm-2 mb-sm-0 form-control form-control-sm">
-          </date-picker>
-          <b-form-checkbox size="sm" class="mb-2 mr-sm-2 mb-sm-0" v-model="newStep.isproject" value="true">
-            Tipo proyecto
-          </b-form-checkbox>
-          <b-button type="primary" size="sm" variant="primary" @click="addStep">
-            <icon name="plus" height="10"/> Añadir Etapa
-          </b-button>
-        </b-form>
+        <b-row>
+          <b-col cols="1">
+            <b-button type="primary" 
+                      size="sm" 
+                      variant="outline-success" 
+                      @click="toggleAddStage">
+              <icon name="minus" v-show="openAddStage" height="10"/><icon name="plus" v-show="!openAddStage" height="10"/> <span v-show="!openAddStage">Añadir Etapa</span><span v-show="openAddStage"> >> </span>
+            </b-button>
+          </b-col>
+          <b-col cols="11">
+            <b-form inline v-show="openAddStage">
+              <b-input id="stepname"
+                        type="text"
+                        size="sm"
+                        v-model.trim="newStep.name"
+                        required
+                        class="mb-2 mr-sm-2 mb-sm-0"
+                        placeholder="Ingrese el nombre"
+                        v-b-tooltip.click.blur.rightbottom 
+                        title="Nombre Etapa">
+              </b-input>
+              <date-picker v-model="newStep.dateInit"
+                        required
+                        placeholder="Ingresar fecha de comienzo"
+                        title="Campo requerido"
+                        v-b-tooltip.click.blur.rightbottom 
+                        :config="{format: 'DD/MM',useCurrent: false, locale: 'es'}"
+                        class="mb-2 mr-sm-2 mb-sm-0 form-control form-control-sm">
+              </date-picker>
+              <b-form-checkbox size="sm" 
+                              class="mb-2 mr-sm-2 mb-sm-0" 
+                              v-model="newStep.isproject" 
+                              value="true">
+                Tipo proyecto
+              </b-form-checkbox>
+              <b-button type="primary" size="sm" variant="primary" @click="addStep">
+                <icon name="plus" height="10"/> Añadir Etapa
+              </b-button>
+            </b-form>
+          </b-col>
+        </b-row>
       </li>
     </ul>
   </li>
@@ -255,7 +270,9 @@ export default {
       showDetailVar: false,
       detailNode: {},
       showDeleteModal: false,
-      showUpdateNode: false
+      showUpdateNode: false,
+      showUpdateStage: false,
+      showDeleteModalStage: false
     }
   },
   computed: {
@@ -289,9 +306,11 @@ export default {
       }
     },
     addChild: function () {
+      var loader = this.$loading.show();
       var newnode = _.extend(this.newnode, {idParentNode: this.model.id})
       node.create(newnode)
         .then((result) => {
+          loader.hide()
           if (result.status === 201) {
             this.model.childrens.push(newnode)
             this.$notify({
@@ -301,32 +320,54 @@ export default {
               type: 'success'
             })
           }
-        }).catch(this.getErrorMessage)
+        }).catch((error) => {
+          loader.hide()
+          this.getErrorMessage(error)
+        })
     },
     toggleSteps: function () {
+      var loader = this.$loading.show();
       node.getStages(this.model.id)
         .then((result) => {
+          loader.hide()
           if (result.status === 200) {
             this.steps = result.data.message
-            // this.$notify({
-            //   group: 'error',
-            //   title: 'Ops!',
-            //   text: 'Debe cargar, al menos, un nodo.',
-            //   type: 'error'
-            // })
           }
-        }).catch(this.getErrorMessage)
+        }).catch((error) => {
+          loader.hide()
+          this.getErrorMessage(error)
+        })
     },
     addStep: function () {
-      // this.model.stages.push({
-      //   name: newnode.name
-      // })
+      var loader = this.$loading.show();
+      this.newStep.idNode = this.model.id
+      node.createStages(this.newStep)
+        .then((result) => {
+          loader.hide()
+          if (result.status === 201) {
+            this.model.stages.push({
+              name: newnode.name
+            , dateInit: newnode.dateInit
+            , id: result.data.id
+            })
+            this.$notify({
+              group: 'success',
+              title: 'Éxito!',
+              text: result.data.message,
+              type: 'success'
+            })
+          }
+        }).catch((error) => {
+          loader.hide()
+          this.getErrorMessage(error)
+        })
     },
     updateNode: function () {
 
     },
     detailsNode: function () {
-      console.log('pepito', this.model.id)
+      var loader = this.$loading.show();
+
       node.get(this.model.id)
         .then((result) => {
           if (result.status === 200) {
@@ -335,10 +376,12 @@ export default {
           } else {
             this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
           }
-        }).catch(this.getErrorMessage)
+        }).catch((error) => {
+          loader.hide()
+          this.getErrorMessage(error)
+        })
     },
     removeNode: function () {
-      console.log(this.model.id)
       this.showDeleteModal = false
       node.remove(this.model.id)
         .then((result) => {
@@ -357,7 +400,6 @@ export default {
 
     },
     getErrorMessage (result) {
-      console.log(result)
       result = result.response
       let message = ''
       if (result.status === 404 || result.status === 500) {
@@ -366,6 +408,13 @@ export default {
         this.logout()
       } else {
         message = result.data.message
+        if (_.isArray(message)) {
+          message = _.reduce(
+            message,
+            (memo, msg) => {
+              return memo + msg.message + '<br>'
+            },'')
+        }
       }
 
       this.$notify({
