@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div>
     <app-menu></app-menu>
     <b-breadcrumb :items="bread"/>
     <b-container>
@@ -519,6 +519,8 @@ export default {
       return nodesOrder
     },
     submit (step) {
+      var loader = this.$loading.show();
+
       let data = {
         nodes: this.nodes,
         stages: this.stages,
@@ -535,12 +537,15 @@ export default {
               type: 'success'
             })
           }
+          loader.hide()
         }).catch((error) => {
           console.log(error)
+          loader.hide()
+
           this.$notify({
             group: 'error',
             title: 'Ops!',
-            text: error.data.msg,
+            text: error.data.message,
             type: 'error'
           })
         })

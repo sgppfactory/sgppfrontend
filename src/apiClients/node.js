@@ -10,10 +10,16 @@ export default {
   get: (id) => {
     return basicClient('/node/' + id, 'GET')
   },
+  update: (id, params) => {
+    return basicClient('/node/' + id, 'PUT', params)
+  },
   remove: (id) => {
     return basicClient('/node/' + id, 'DELETE')
   },
   createStages: (params) => {
     return basicClient('/stage', 'POST', params)
+  },
+  updateStage: (id, params) => {
+    return basicClient('/stage/' + id, 'PUT', params)
   }
 }

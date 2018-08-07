@@ -83,17 +83,6 @@ export default {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    // buildTree (params) {
-    //   app.getConfig(params)
-    //     .then((result) => {
-    //       this.persons = (result.status === 200)
-    //       ? result.data.result
-    //       : []
-
-    //       this.cantPages = result.data.pages
-    //       this.cantResults = result.data.total
-    //     }).catch(this.getErrorMessage)
-    // },
     getErrorMessage (result) {
       let message = ''
       if (result.status === 404 || result.status === 500) {

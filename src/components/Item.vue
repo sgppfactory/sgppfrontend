@@ -252,7 +252,7 @@ export default {
       newnode: {
         name: '',
         cicle: false,
-        amount: ''
+        amount: 0
       },
       newStep: {
         name: '',
@@ -264,10 +264,15 @@ export default {
         isproject: false,
         dateInit: ''
       },
+      updateNodeData: {
+        name: '',
+        cicle: false,
+        amount: 0
+      },
       steps: [],
       openAddChild: false,
       openAddStage: false,
-      showDetailVar: false,
+      // showDetailVar: false,
       detailNode: {},
       showDeleteModal: false,
       showUpdateNode: false,
@@ -363,16 +368,29 @@ export default {
         })
     },
     updateNode: function () {
-
+      // this.showDeleteModal = false
+      node.update(this.model.id, this.updateNodeData)
+        .then((result) => {
+          if (result.status === 200) {
+            this.modal = {}
+            this.$notify({
+              group: 'error',
+              title: 'Ops!',
+              text: 'Debe cargar, al menos, un nodo.',
+              type: 'error'
+            })
+          }
+        }).catch(this.getErrorMessage)
     },
     detailsNode: function () {
       var loader = this.$loading.show();
 
       node.get(this.model.id)
         .then((result) => {
+          loader.hide()
           if (result.status === 200) {
             this.detailNode = result.data.message
-            this.showDetailVar = true
+            // this.showDetailVar = true
           } else {
             this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
           }
@@ -397,7 +415,19 @@ export default {
         }).catch(this.getErrorMessage)
     },
     updateStage: function () {
-
+      this.showDeleteModal = false
+      node.updateStage(this.model.id)
+        .then((result) => {
+          if (result.status === 200) {
+            this.modal = {}
+            this.$notify({
+              group: 'error',
+              title: 'Ops!',
+              text: 'Debe cargar, al menos, un nodo.',
+              type: 'error'
+            })
+          }
+        }).catch(this.getErrorMessage)
     },
     getErrorMessage (result) {
       result = result.response
