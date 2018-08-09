@@ -111,6 +111,8 @@ export default {
       this.$router.push('login')
     },
     search (page) {
+      var loader = this.$loading.show()
+
       var params = this.searchParam ? {
         filter: [
           {key: 'title', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
@@ -126,6 +128,7 @@ export default {
 
       porpose.getFilter(params)
         .then((result) => {
+          loader.hide()
           this.porposeprojects = (result.status === 200)
           ? result.data.result
           : []
@@ -133,6 +136,7 @@ export default {
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((error) => {
+          loader.hide()
           this.$notify({
             group: 'error',
             title: 'Ops!',
@@ -144,6 +148,7 @@ export default {
         })
     },
     deleteporpose () {
+      var loader = this.$loading.show()
       porpose.remove(this.toRemove)
         .then((result) => {
           // console.log(result)
@@ -157,10 +162,12 @@ export default {
               type: 'success',
               position: 'bottom right'
             })
+            loader.hide()
             this.search()
           }
         }).catch((error) => {
           // console.log(error)
+          loader.hide()
           this.$notify({
             group: 'error',
             title: 'Ops!',
@@ -172,8 +179,10 @@ export default {
         })
     },
     showDetails (id) {
+      var loader = this.$loading.show()
       porpose.get(id)
         .then((result) => {
+          loader.hide()
           if (result.status === 200) {
             this.toRemove = 0
             // console.log(result)
@@ -181,6 +190,7 @@ export default {
 
           }
         }).catch((error) => {
+          loader.hide()
           console.log(error)
           // this.logout()
         })

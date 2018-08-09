@@ -1,8 +1,6 @@
 <template>
-  <li>
+  <li v-show="totalRemove">
     <div>
-      <notifications group="success" />
-      <notifications group="error" />
       <a @click="toggle" v-on:click="open = !open" :class="{[$style.bold]: isFolder}">
         <span><icon name="mouse-pointer" height="10"/> - {{model.name}}</span> 
         <span v-if="model.description"><i>({{model.description}})</i></span>
@@ -20,7 +18,7 @@
         <a @click="showDeleteModal=true" v-b-tooltip.hover title="Eliminar nodo">
           <icon name="remove" height="13" />
         </a>
-        <a @click="showUpdateNode=true" v-b-tooltip.hover title="Modificar nodo">
+        <a @click="showUpdate" v-b-tooltip.hover title="Modificar nodo">
           <icon name="edit" height="13" />
         </a>
       </span>
@@ -46,7 +44,7 @@
           <b-form-group label="Nombre:" label-for="name">
             <b-form-input id="name"
                           type="text"
-                          v-model.trim="model.name"
+                          v-model.trim="updateNodeData.name"
                           required
                           placeholder="Ingrese el nombre"
                           v-b-tooltip.click.blur.rightbottom 
@@ -56,14 +54,14 @@
           <b-form-group label="Descripción:" label-for="name">
             <b-form-input id="description"
                           type="text"
-                          v-model.trim="model.description"
+                          v-model.trim="updateNodeData.description"
                           placeholder="Ingrese la Descripción">
             </b-form-input>
           </b-form-group>
           <b-form-group label="Monto:" label-for="name">
             <b-form-input id="amount"
                           type="text"
-                          v-model.trim="model.amount"
+                          v-model.trim="updateNodeData.amount"
                           placeholder="Ingrese el monto">
             </b-form-input>
           </b-form-group>
@@ -122,58 +120,11 @@
       </li>
     </ul>
     <ul v-else v-show="open">
-      <li class="item"
-        v-for="(step, index) in steps"
+      <item-stage v-for="(step, index) in steps"
         :index="index"
         :key="step.id"
-        :model="step">
-        <icon name="asterisk" height="10" v-b-tooltip.hover title="Etapas"/> {{step.order}} {{step.name}}
-        <span> | 
-          <a @click="showDeleteModalStage=true" v-b-tooltip.hover title="Eliminar etapa">
-            <icon name="remove" height="13" />
-          </a>
-          <a @click="showUpdateStage=true" v-b-tooltip.hover title="Modificar etapa">
-            <icon name="edit" height="13" />
-          </a>
-        </span>
-        <!-- MODIFICACION DE ETAPA -->
-        <b-modal v-model="showUpdateStage" title="Modificar Etapa">
-          <b-form>
-            <b-form-group label="Nombre:" label-for="name">
-              <b-form-input id="name"
-                            type="text"
-                            v-model.trim="step.name"
-                            required
-                            placeholder="Ingrese el nombre"
-                            v-b-tooltip.click.blur.rightbottom 
-                            title="Campo requerido">
-              </b-form-input>
-            </b-form-group>
-          </b-form>
-          <div slot="modal-footer" class="w-100 text-right">
-           <b-btn size="sm" variant="primary" @click="updateStage">
-             Modificar
-           </b-btn>
-           <b-btn size="sm" variant="secondary" @click="showUpdateStage=false">
-             Cancelar
-           </b-btn>
-         </div>
-        </b-modal>
-        <!-- BAJA DE ETAPA -->
-        <b-modal v-model="showDeleteModalStage" title="Eliminar Nodo">
-          <p class="my-1">Va a eliminar la etapa "{{model.name}}".</p>
-          <p class="my-1">¿Está seguro/a que desea realizar la siguiente acción?</p>
-          <div slot="modal-footer" class="w-100 text-right">
-           <b-btn size="sm" variant="danger" @click="removeNode">
-             Eliminar
-           </b-btn>
-           <b-btn addFormsize="sm" variant="secondary" @click="showDeleteModal=false">
-             Cancelar
-           </b-btn>
-         </div>
-        </b-modal>
-      </li>
-      <!-- ALTA ETAPA -->
+        :model="step"></item-stage>
+        <!-- ALTA ETAPA -->
       <li class="item add">
         <b-row>
           <b-col cols="1">
@@ -228,9 +179,9 @@
 </style>
 
 <script>
-// import app from '../apiClients/configuration'
 import node from '../apiClients/node'
 import DetailModal from '@/components/Details'
+import ItemStage from '@/components/ItemStage'
 import Vue from 'vue'
 import _ from 'underscore'
 import datePicker from 'vue-bootstrap-datetimepicker'
@@ -243,12 +194,12 @@ export default {
   },
   components: {
     'detail-modal': DetailModal,
+    'item-stage': ItemStage,
     datePicker
   },
   data () {
     return {
       open: false,
-      toRemove: 0,
       newnode: {
         name: '',
         cicle: false,
@@ -259,25 +210,19 @@ export default {
         isproject: false,
         dateInit: ''
       },
-      updateStepData: {
-        name: '',
-        isproject: false,
-        dateInit: ''
-      },
       updateNodeData: {
         name: '',
+        description: '',
         cicle: false,
         amount: 0
       },
       steps: [],
       openAddChild: false,
       openAddStage: false,
-      // showDetailVar: false,
       detailNode: {},
       showDeleteModal: false,
       showUpdateNode: false,
-      showUpdateStage: false,
-      showDeleteModalStage: false
+      totalRemove: true
     }
   },
   computed: {
@@ -292,7 +237,6 @@ export default {
   },
   methods: {
     toggle: function () {
-      // console.log(this.showDetailVar)
       if (this.isFolder) {
         this.open = !this.open
       }
@@ -311,19 +255,17 @@ export default {
       }
     },
     addChild: function () {
-      var loader = this.$loading.show();
+      var loader = this.$loading.show()
       var newnode = _.extend(this.newnode, {idParentNode: this.model.id})
       node.create(newnode)
         .then((result) => {
           loader.hide()
           if (result.status === 201) {
             this.model.childrens.push(newnode)
-            this.$notify({
-              group: 'success',
-              title: 'Éxito!',
-              text: result.data.message,
-              type: 'success'
-            })
+
+            this.showSuccessMsg(result)
+          } else {
+            this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
           }
         }).catch((error) => {
           loader.hide()
@@ -331,7 +273,7 @@ export default {
         })
     },
     toggleSteps: function () {
-      var loader = this.$loading.show();
+      var loader = this.$loading.show()
       node.getStages(this.model.id)
         .then((result) => {
           loader.hide()
@@ -344,23 +286,23 @@ export default {
         })
     },
     addStep: function () {
-      var loader = this.$loading.show();
+      var loader = this.$loading.show()
+
       this.newStep.idNode = this.model.id
       node.createStages(this.newStep)
         .then((result) => {
           loader.hide()
+          // console.log(result)
           if (result.status === 201) {
-            this.model.stages.push({
-              name: newnode.name
-            , dateInit: newnode.dateInit
-            , id: result.data.id
+            this.steps.push({
+              name: this.newnode.name,
+              dateInit: this.newnode.dateInit,
+              id: result.data.id
             })
-            this.$notify({
-              group: 'success',
-              title: 'Éxito!',
-              text: result.data.message,
-              type: 'success'
-            })
+
+            this.showSuccessMsg(result)
+          } else {
+            this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
           }
         }).catch((error) => {
           loader.hide()
@@ -368,22 +310,31 @@ export default {
         })
     },
     updateNode: function () {
+      var loader = this.$loading.show()
       // this.showDeleteModal = false
       node.update(this.model.id, this.updateNodeData)
         .then((result) => {
+          loader.hide()
           if (result.status === 200) {
-            this.modal = {}
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: 'Debe cargar, al menos, un nodo.',
-              type: 'error'
-            })
+            this.model = {
+              name: this.updateNodeData.name,
+              description: this.updateNodeData.description,
+              cicle: this.updateNodeData.cicle,
+              amount: this.updateNodeData.amount
+            }
+            // this.modal = {}
+            this.showSuccessMsg(result)
+            this.showUpdateNode = false
+          } else {
+            this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
           }
-        }).catch(this.getErrorMessage)
+        }).catch((error) => {
+          loader.hide()
+          this.getErrorMessage(error)
+        })
     },
     detailsNode: function () {
-      var loader = this.$loading.show();
+      var loader = this.$loading.show()
 
       node.get(this.model.id)
         .then((result) => {
@@ -404,28 +355,8 @@ export default {
       node.remove(this.model.id)
         .then((result) => {
           if (result.status === 200) {
-            this.modal = {}
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: 'Debe cargar, al menos, un nodo.',
-              type: 'error'
-            })
-          }
-        }).catch(this.getErrorMessage)
-    },
-    updateStage: function () {
-      this.showDeleteModal = false
-      node.updateStage(this.model.id)
-        .then((result) => {
-          if (result.status === 200) {
-            this.modal = {}
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: 'Debe cargar, al menos, un nodo.',
-              type: 'error'
-            })
+            this.showSuccessMsg(result)
+            this.totalRemove = false
           }
         }).catch(this.getErrorMessage)
     },
@@ -443,7 +374,7 @@ export default {
             message,
             (memo, msg) => {
               return memo + msg.message + '<br>'
-            },'')
+            }, '')
         }
       }
 
@@ -455,9 +386,27 @@ export default {
         position: 'bottom right'
       })
     },
+    showSuccessMsg (result) {
+      this.$notify({
+        group: 'success',
+        title: 'Éxito!',
+        text: result.data.message,
+        type: 'success'
+      })
+    },
     logout () {
       localStorage.jwt = ''
       this.$router.push('login')
+    },
+    showUpdate () {
+      this.updateNodeData = {
+        name: this.model.name,
+        description: this.model.description,
+        cicle: this.model.cicle,
+        amount: this.model.amount
+      }
+
+      this.showUpdateNode = true
     }
   }
 }

@@ -66,7 +66,8 @@ export default {
     }
   },
   created () {
-    var loader = this.$loading.show();
+    var loader = this.$loading.show()
+
     app.buildTree()
       .then((result) => {
         loader.hide()

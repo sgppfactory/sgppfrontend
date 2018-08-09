@@ -500,7 +500,6 @@ export default {
           }
         })
 
-        console.log(nodesOrder)
         this.nodes = nodesOrder
       }
     },
@@ -519,7 +518,7 @@ export default {
       return nodesOrder
     },
     submit (step) {
-      var loader = this.$loading.show();
+      var loader = this.$loading.show()
 
       let data = {
         nodes: this.nodes,

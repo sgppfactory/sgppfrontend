@@ -21,5 +21,8 @@ export default {
   },
   updateStage: (id, params) => {
     return basicClient('/stage/' + id, 'PUT', params)
+  },
+  removeStage: (id) => {
+    return basicClient('/stage/' + id, 'DELETE')
   }
 }
