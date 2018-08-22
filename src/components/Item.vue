@@ -273,17 +273,19 @@ export default {
         })
     },
     toggleSteps: function () {
-      var loader = this.$loading.show()
-      node.getStages(this.model.id)
-        .then((result) => {
-          loader.hide()
-          if (result.status === 200) {
-            this.steps = result.data.message
-          }
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
+      if(!this.open) {
+        var loader = this.$loading.show()
+        node.getStages(this.model.id)
+          .then((result) => {
+            loader.hide()
+            if (result.status === 200) {
+              this.steps = result.data.message
+            }
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      }
     },
     addStep: function () {
       var loader = this.$loading.show()
@@ -295,8 +297,9 @@ export default {
           // console.log(result)
           if (result.status === 201) {
             this.steps.push({
-              name: this.newnode.name,
-              dateInit: this.newnode.dateInit,
+              name: this.newStep.name,
+              dateInit: this.newStep.dateInit,
+              isProject: this.newStep.isproject,
               id: result.data.id
             })
 

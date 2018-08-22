@@ -13,6 +13,7 @@ import AddStructure from '@/components/AddStructure'
 import AddReport from '@/components/AddReport'
 import AddTask from '@/components/AddTask'
 import Porpose from '@/components/Porpose'
+import AddPorpose from '@/components/AddPorpose'
 
 Vue.use(Router)
 
@@ -77,6 +78,10 @@ export default new Router({
       path: '/addtasks',
       name: 'AddTask',
       component: AddTask
+    }, {
+      path: '/addporpose',
+      name: 'AddPorpose',
+      component: AddPorpose
     }
   ]
 })

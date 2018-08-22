@@ -17,9 +17,46 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
+
+            <b-form-group label="Nodo:" label-for="idnode">
+              <b-form-select id="idnode"
+                            v-model="form.idnode"
+                            placeholder="Seleccionar un perfil de usuario"
+                            :options="optionsNodes">
+              </b-form-select>
+            </b-form-group>
+
+            <b-form-group label="Monto:" label-for="amount" prepend="$">
+              <b-input-group prepend="$">
+                <b-form-input id="amount"
+                              v-model.trim="form.amount"
+                              placeholder="Ingrese el monto en formato XXXX.YY">
+                </b-form-input>
+              </b-input-group>
+            </b-form-group>
+
+            <b-form-group label="Detalles:" label-for="details">
+              <b-form-textarea id="details"
+                            v-model.trim="form.details"
+                            placeholder="Ingrese algún detalle">
+              </b-form-textarea>
+            </b-form-group>
           </b-col>
           <b-col>
+            <b-form-group label="Ubicación:" label-for="location">
+              <b-form-input id="location"
+                            type="text"
+                            v-model.trim="form.location"
+                            placeholder="Ingresar una ubicación">
+              </b-form-input>
+            </b-form-group>
 
+            <gmap-map
+              :center="{lat:-34.097695, lng:-59.030265}"
+              :zoom="14"
+              map-type-id="terrain"
+              style="width: 100%; height: 300px"
+            ></gmap-map>
           </b-col>
         </b-row>
         <b-button type="submit" variant="primary">Crear</b-button>
@@ -34,6 +71,7 @@
 <script>
 import 'vue-awesome/icons'
 import porpose from '../apiClients/porpose'
+import node from '../apiClients/node'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
 
@@ -52,7 +90,7 @@ export default {
         href: '#/home'
       }, {
         text: 'Propuestas / Proyectos',
-        href: '#/reports'
+        href: '#/porposes_projects'
       }, {
         text: 'Alta de propuesta',
         active: true
@@ -64,7 +102,7 @@ export default {
         location: '',
         amount: ''
       },
-      optionsEntities: []
+      optionsNodes: []
     }
   },
   computed: {
@@ -78,7 +116,23 @@ export default {
     }
   },
   created () {
-
+    var loader = this.$loading.show()
+    
+    node.getChildrens()
+      .then((results) => {
+        if(results) {
+          this.optionsNodes = _.map(results.data.message, (item) => {
+            return {
+              value: item.id,
+              text: item.name + (item.description != "" ? ' - ' + item.description.substr(0,25) : "")
+            }
+          })
+        }
+        loader.hide()
+      }).catch((err) => {
+        loader.hide()
+        this.getErrorMessage(err)
+      })
   },
   methods: {
     logout () {

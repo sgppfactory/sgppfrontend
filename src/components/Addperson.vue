@@ -87,8 +87,8 @@
             </b-form-group>
           </b-col>
           <b-col v-if="form.withuser">
-            <b-form-group label="Perfil de usuario:" label-for="exampleInput7">
-              <b-form-select id="exampleInput7"
+            <b-form-group label="Perfil de usuario:" label-for="rols">
+              <b-form-select id="rols"
                             v-model="form.rol"
                             placeholder="Seleccionar un perfil de usuario"
                             :options="optionsRols">

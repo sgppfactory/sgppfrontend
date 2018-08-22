@@ -106,16 +106,21 @@ export default {
     // },
 
     eventSelected (event) {
+      var loader = this.$loading.show()
       this.selected = event
       tasks.get(event)
         .then((result) => {
+          loader.hide()
           console.log(result)
           if (result.status === 200) {
             this.toRemove = 0
           } else {
 
           }
-        }).catch(this.getErrorMessage)
+        }).catch((error) =>{
+          loader.hide()
+          this.getErrorMessage(error)
+        })
     },
     eventCreated (...args) {
     // eventCreated (/**/) {
