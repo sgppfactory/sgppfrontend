@@ -111,6 +111,7 @@ import persons from '../apiClients/persons'
 import rol from '../apiClients/rol'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
+import {formatResponse} from '../utils/tools.js'
 
 export default {
   name: 'Addperson',
@@ -141,7 +142,8 @@ export default {
         cel: '',
         location: '',
         withuser: false,
-        rol: ''
+        rol: '',
+        datenac: ''
       },
       optionsRols: []
     }
@@ -157,6 +159,8 @@ export default {
     }
   },
   created () {
+    var loader = this.$loading.show()
+    var self = this
     rol.get()
       .then((rolData) => {
         rolData = rolData.data.message
@@ -167,6 +171,29 @@ export default {
               text: item.name
             }
           })
+
+          if (self.$route.query.personId) {
+            persons
+              .getById(self.$route.query.personId)
+              .then((result) => {
+                loader.hide()
+                let person = result.data.message
+                let withuser = !_.isNull(person.username)
+                self.form = {
+                  name: person.name,
+                  lastname: person.lastname,
+                  email: person.email,
+                  tel: person.tel,
+                  cel: person.cel,
+                  location: person.location,
+                  datenac: person.dateBirth,
+                  withuser: withuser,
+                  rol: person.idRol
+                }
+              })
+          } else {
+            loader.hide()
+          }
         }
       }).catch(() => {
         this.logout()
@@ -177,10 +204,12 @@ export default {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    submit (id) {
+    submit (evt) {
+      var loader = this.$loading.show()
+      evt.preventDefault()
       let params = {}
-      if (id) {
-        params.id = id
+      if (this.$route.params.personId) {
+        params.id = this.$route.params.personId
       }
 
       persons.post(_.extend(this.form, params))
@@ -195,25 +224,11 @@ export default {
               // position: 'bottom right'
             })
             this.onReset()
-            // this.showAlertSuccess()
-          } else {
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: result.data.message,
-              type: 'error'
-            })
           }
+          loader.hide()
         }).catch((error) => {
-          // console.log(error)
-          this.errorMessage = error.response.data.msg
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.response.data.msg,
-            type: 'error'
-          })
-          // this.logout()
+          loader.hide()
+          this.getErrorMessage(error)
         })
     },
     onReset () {
@@ -228,8 +243,20 @@ export default {
         rol: ''
       }
     },
-    setError (input) {
-
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
     }
   }
 }

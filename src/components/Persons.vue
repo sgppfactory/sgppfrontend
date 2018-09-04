@@ -24,11 +24,7 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <!-- We use click.stop here to prevent 'sort-changed' or 'head-clicked' events -->
-          <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
-          <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
-          <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
-          <router-link :to="{ name: 'modperson', params: { personId: row.item.id }}" v-b-tooltip.hover title="Modificar persona"> 
+          <router-link v-bind:to="{ path: 'addperson', query: { personId: row.item.id }}" v-b-tooltip.hover title="Modificar persona"> 
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
@@ -50,13 +46,17 @@
       </b-table>
       <b-row>
         <b-col sm="9">
-          <b-pagination-nav :link-gen="search" base-url="#" :number-of-pages="cantPages" v-model="currentPage" />
+        <!-- base-url="#"  -->
+          <b-pagination-nav :link-gen="getLinkPag" 
+                            :number-of-pages="cantPages" 
+                            v-model="currentPage" />
         </b-col>
         <b-col sm="3" align="center">Registros: {{cantResults}}</b-col>
       </b-row>
       <notifications group="success" />
       <notifications group="error" />
     </b-container>
+    <!-- MODAL DELETE -->
     <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
       <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
       <div slot="modal-footer" class="w-100 text-right">
@@ -76,6 +76,8 @@
 import 'vue-awesome/icons'
 import persons from '../apiClients/persons'
 import Menu from '@/components/Menu'
+import {formatResponse} from '../utils/tools.js'
+
 export default {
   name: 'Persons',
   components: {
@@ -109,12 +111,26 @@ export default {
       return this.cantResults === 0
     }
   },
+  created () {
+    this.search(this.$route.query.page)
+  },
+  beforeRouteUpdate (to, from, next) {
+    // console.log(to)
+    this.search(to.query.page)
+    next()
+  },
   methods: {
     logout () {
       localStorage.jwt = ''
-      this.$router.push('login')
+      this.$router.push('/login')
+      // this.$router.go('/')
+    },
+    getLinkPag (page) {
+      return '#/persons?page=' + page
     },
     search (page) {
+      var loader = this.$loading.show()
+
       var params = this.searchParam ? {
         filter: [
           {key: 'name', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
@@ -127,37 +143,29 @@ export default {
       if (page) {
         params.page = page
       }
+      // Muestro de a 10 registros...
+      params.bypage = 5
 
       persons.getFilter(params)
         .then((result) => {
+          loader.hide()
           this.persons = (result.status === 200)
           ? result.data.result
           : []
-
+          // console.log(result.data)
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((result) => {
-          let message = ''
-          if (result.status === 404 || result.status === 500) {
-            message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
-          } else if (result.status === 401) {
-            this.logout()
-          } else {
-            message = result.data.message
-          }
-
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: message,
-            type: 'error',
-            position: 'bottom right'
-          })
+          loader.hide()
+          this.getErrorMessage(result)
         })
     },
     deleteperson () {
+      var loader = this.$loading.show()
+
       persons.remove(this.toRemove)
         .then((result) => {
+          loader.hide()
           // console.log(result)
           if (result.status === 200) {
             this.toRemove = 0
@@ -166,36 +174,43 @@ export default {
               group: 'success',
               title: 'Ok!',
               text: result.data.message,
-              type: 'success',
-              position: 'bottom right'
+              type: 'success'
             })
             this.search()
           }
         }).catch((error) => {
-          // console.log(error)
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.data.message,
-            type: 'error',
-            position: 'bottom right'
-          })
-          // this.logout()
+          loader.hide()
+          this.getErrorMessage(error)
         })
     },
     showDetails (id) {
+      var loader = this.$loading.show()
+
       persons.get(id)
         .then((result) => {
+          loader.hide()
           if (result.status === 200) {
             this.toRemove = 0
-            // console.log(result)
-          } else {
-
           }
         }).catch((error) => {
-          console.log(error)
-          // this.logout()
+          loader.hide()
+          this.getErrorMessage(error)
         })
+    },
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
     }
   }
 }

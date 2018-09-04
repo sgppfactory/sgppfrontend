@@ -117,7 +117,7 @@ export default {
           } else {
 
           }
-        }).catch((error) =>{
+        }).catch((error) => {
           loader.hide()
           this.getErrorMessage(error)
         })

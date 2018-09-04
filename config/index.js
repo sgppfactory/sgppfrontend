@@ -6,6 +6,7 @@ const path = require('path')
 
 module.exports = {
   API_URL: 'http://localhost:3000',
+  // API_URL: 'https://api.forkb.com.ar:3000',
   keyGMaps: path.resolve(__dirname, '../credentials/gmaps.txt'),
   dev: {
 

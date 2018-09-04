@@ -1,4 +1,6 @@
-export {formatMoney, changeFormatDate}
+import _ from 'underscore'
+
+export {formatMoney, changeFormatDate, formatResponse}
 
 function formatMoney (number, symbol) {
   let places = 2
@@ -16,4 +18,25 @@ function formatMoney (number, symbol) {
 function changeFormatDate (latinDate) {
   var dma = latinDate.split('/')
   return dma.length === 3 ? dma[2] + '-' + dma[1] + '-' + dma[0] : false
+}
+
+function formatResponse (result, callback) {
+  result = result.response
+  let message = ''
+  if (result.status === 404 || result.status === 500) {
+    message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
+  } else if (result.status === 401) {
+    message = 'logout'
+  } else {
+    message = result.data.message
+    if (_.isArray(message)) {
+      message = _.reduce(
+        message,
+        (memo, msg) => {
+          return memo + msg.message + '<br>'
+        }, '')
+    }
+  }
+
+  callback(message)
 }

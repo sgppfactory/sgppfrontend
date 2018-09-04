@@ -56,12 +56,15 @@ export default {
   },
   methods: {
     login (evt) {
+      var loader = this.$loading.show()
       evt.preventDefault()
       auth.login(this.username, this.password).then((response) => {
+        loader.hide()
         this.messageError = ''
         localStorage.jwt = response.data.jwt
         this.$router.push('home')
       }).catch((error) => {
+        loader.hide()
         // console.log(error)
         if (error.response) {
           this.messageError = error.response.data.msg

@@ -7,10 +7,10 @@
       <b-form @submit="submit" @reset="onReset">
         <b-row>
           <b-col>
-            <b-form-group label="Nombres:" label-for="name">
+            <b-form-group label="Título:" label-for="name">
               <b-form-input id="name"
                             type="text"
-                            v-model.trim="form.name"
+                            v-model.trim="form.title"
                             required
                             placeholder="Ingrese el nombre"
                             v-b-tooltip.click.blur.rightbottom 
@@ -18,9 +18,9 @@
               </b-form-input>
             </b-form-group>
 
-            <b-form-group label="Nodo:" label-for="idnode">
+            <b-form-group label="Nodo:" label-for="idNode">
               <b-form-select id="idnode"
-                            v-model="form.idnode"
+                            v-model="form.idNode"
                             placeholder="Seleccionar un perfil de usuario"
                             :options="optionsNodes">
               </b-form-select>
@@ -74,6 +74,7 @@ import porpose from '../apiClients/porpose'
 import node from '../apiClients/node'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
+import {formatResponse} from '../utils/tools.js'
 
 export default {
   name: 'AddPorpose',
@@ -117,14 +118,14 @@ export default {
   },
   created () {
     var loader = this.$loading.show()
-    
+
     node.getChildrens()
       .then((results) => {
-        if(results) {
+        if (results) {
           this.optionsNodes = _.map(results.data.message, (item) => {
             return {
               value: item.id,
-              text: item.name + (item.description != "" ? ' - ' + item.description.substr(0,25) : "")
+              text: item.name + (item.description !== '' ? ' - ' + item.description.substr(0, 25) : '')
             }
           })
         }
@@ -139,15 +140,15 @@ export default {
       localStorage.jwt = ''
       this.$router.push('login')
     },
-    submit (id) {
+    submit (evt) {
+      var loader = this.$loading.show()
+      evt.preventDefault()
       let params = {}
-      if (id) {
-        params.id = id
+      if (this.$route.params.porposeId) {
+        params.id = this.$route.params.porposeId
       }
-
       porpose.post(_.extend(this.form, params))
         .then((result) => {
-          console.log(result)
           if (result.status === 201) {
             this.$notify({
               group: 'success',
@@ -156,25 +157,11 @@ export default {
               type: 'success'
             })
             this.onReset()
-            // this.showAlertSuccess()
-          } else {
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: result.data.message,
-              type: 'error'
-            })
           }
+          loader.hide()
         }).catch((error) => {
-          // console.log(error)
-          this.errorMessage = error.response.data.msg
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.response.data.msg,
-            type: 'error'
-          })
-          // this.logout()
+          loader.hide()
+          this.getErrorMessage(error)
         })
     },
     onReset () {
@@ -193,34 +180,19 @@ export default {
 
     },
     getErrorMessage (result) {
-      result = result.response
-      let message = ''
-      if (result.status === 404 || result.status === 500) {
-        message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
-      } else if (result.status === 401) {
-        this.logout()
-      } else {
-        message = result.data.message
-        if (_.isArray(message)) {
-          message = _.reduce(
-            message,
-            (memo, msg) => {
-              return memo + msg.message + '<br>'
-            },'')
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
         }
-      }
-
-      this.$notify({
-        group: 'error',
-        title: 'Ops!',
-        text: message,
-        type: 'error',
-        position: 'bottom right'
       })
-    },
-    logout () {
-      localStorage.jwt = ''
-      this.$router.push('login')
     }
   }
 }

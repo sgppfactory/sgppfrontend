@@ -15,6 +15,8 @@ import AddTask from '@/components/AddTask'
 import Porpose from '@/components/Porpose'
 import AddPorpose from '@/components/AddPorpose'
 
+const NotFound = { template: '<p>Page not found</p>' }
+
 Vue.use(Router)
 
 export default new Router({
@@ -42,10 +44,6 @@ export default new Router({
       path: '/persons',
       name: 'Persons',
       component: PersonsHome
-    }, {
-      path: '/modperson/:personId',
-      name: 'modperson',
-      component: Addperson
     }, {
       path: '/addperson',
       name: 'Addperson',
@@ -82,6 +80,10 @@ export default new Router({
       path: '/addporpose',
       name: 'AddPorpose',
       component: AddPorpose
+    }, {
+      path: ':path',
+      name: '404',
+      component: NotFound
     }
   ]
 })

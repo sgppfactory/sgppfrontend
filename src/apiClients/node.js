@@ -20,8 +20,8 @@ export default {
     return basicClient(
       '/nodes',
       'GET',
-      {bypage: 100, filter: [{"key": "cicle", "value": true, "operator": "AND"}]
-    })
+      {bypage: 100, filter: [{'key': 'cicle', 'value': true, 'operator': 'AND'}]}
+      )
   },
   createStages: (params) => {
     return basicClient('/stage', 'POST', params)

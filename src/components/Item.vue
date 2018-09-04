@@ -273,7 +273,7 @@ export default {
         })
     },
     toggleSteps: function () {
-      if(!this.open) {
+      if (!this.open) {
         var loader = this.$loading.show()
         node.getStages(this.model.id)
           .then((result) => {
