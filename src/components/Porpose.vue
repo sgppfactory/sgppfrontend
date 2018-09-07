@@ -24,7 +24,7 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <router-link :to="{ name: 'modporpose', params: { porposeId: row.item.id }}" v-b-tooltip.hover title="Modificar Propuesta / Proyecto"> 
+          <router-link :to="{ name: 'addporpose', query: { personId: row.item.id }}" v-b-tooltip.hover title="Modificar Propuesta / Proyecto"> 
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
@@ -46,7 +46,9 @@
       </b-table>
       <b-row>
         <b-col sm="9">
-          <b-pagination-nav :link-gen="search" base-url="#" :number-of-pages="cantPages" v-model="currentPage" />
+          <b-pagination-nav :link-gen="getLinkPag" 
+                  :number-of-pages="cantPages" 
+                  v-model="currentPage" />
         </b-col>
         <b-col sm="3" align="center">Registros: {{cantResults}}</b-col>
       </b-row>
@@ -105,10 +107,20 @@ export default {
       return this.cantResults === 0
     }
   },
+  beforeRouteUpdate (to, from, next) {
+    this.search(to.query.page)
+    next()
+  },
+  created () {
+    this.search(this.$route.query.page)
+  },
   methods: {
     logout () {
       localStorage.jwt = ''
-      this.$router.push('login')
+      this.$router.push('/login')
+    },
+    getLinkPag (page) {
+      return '#/porpose?page=' + page
     },
     search (page) {
       var loader = this.$loading.show()
@@ -117,14 +129,14 @@ export default {
         filter: [
           {key: 'title', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
           {key: 'state', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
-          // {key: 'email', value: this.searchParam, operator: 'like', operator_sup: 'OR'},
-          // {key: 'username', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
         ]
       } : {}
 
       if (page) {
         params.page = page
       }
+      // Muestro de a 10 registros...
+      params.bypage = 5
 
       porpose.getFilter(params)
         .then((result) => {
@@ -137,14 +149,7 @@ export default {
           this.cantResults = result.data.total
         }).catch((error) => {
           loader.hide()
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.data.message,
-            type: 'error',
-            position: 'bottom right'
-          })
-          // this.logout()
+          this.getErrorMessage(result)
         })
     },
     deleteporpose () {
@@ -163,19 +168,11 @@ export default {
               position: 'bottom right'
             })
             loader.hide()
-            this.search()
+            this.search(this.$route.query.page)
           }
         }).catch((error) => {
-          // console.log(error)
           loader.hide()
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.data.message,
-            type: 'error',
-            position: 'bottom right'
-          })
-          // this.logout()
+          this.getErrorMessage(result)
         })
     },
     showDetails (id) {
@@ -186,14 +183,26 @@ export default {
           if (result.status === 200) {
             this.toRemove = 0
             // console.log(result)
-          } else {
-
           }
         }).catch((error) => {
           loader.hide()
-          console.log(error)
-          // this.logout()
+          this.getErrorMessage(result)
         })
+    },
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
     }
   }
 }

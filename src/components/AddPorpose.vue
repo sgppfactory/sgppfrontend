@@ -45,7 +45,6 @@
           <b-col>
             <b-form-group label="Ubicación:" label-for="location">
               <b-form-input id="location"
-                            type="text"
                             v-model.trim="form.location"
                             placeholder="Ingresar una ubicación">
               </b-form-input>
@@ -141,13 +140,14 @@ export default {
       this.$router.push('login')
     },
     submit (evt) {
-      var loader = this.$loading.show()
       evt.preventDefault()
-      let params = {}
+      var loader = this.$loading.show()
+      let params = _.clone(this.form)
       if (this.$route.params.porposeId) {
         params.id = this.$route.params.porposeId
       }
-      porpose.post(_.extend(this.form, params))
+      params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
+      porpose.post(params)
         .then((result) => {
           if (result.status === 201) {
             this.$notify({
@@ -166,14 +166,11 @@ export default {
     },
     onReset () {
       this.form = {
-        name: '',
-        lastname: '',
-        email: '',
-        tel: '',
-        cel: '',
+        title: '',
+        idNode: '',
+        details: '',
         location: '',
-        withuser: false,
-        rol: ''
+        amount: ''
       }
     },
     setError (input) {

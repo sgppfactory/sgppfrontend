@@ -123,7 +123,6 @@ export default {
     logout () {
       localStorage.jwt = ''
       this.$router.push('/login')
-      // this.$router.go('/')
     },
     getLinkPag (page) {
       return '#/persons?page=' + page
@@ -166,7 +165,6 @@ export default {
       persons.remove(this.toRemove)
         .then((result) => {
           loader.hide()
-          // console.log(result)
           if (result.status === 200) {
             this.toRemove = 0
             this.show = false
@@ -176,7 +174,7 @@ export default {
               text: result.data.message,
               type: 'success'
             })
-            this.search()
+            this.search(this.$route.query.page)
           }
         }).catch((error) => {
           loader.hide()

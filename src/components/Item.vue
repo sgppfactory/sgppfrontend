@@ -203,7 +203,7 @@ export default {
       newnode: {
         name: '',
         cicle: false,
-        amount: 0
+        amount: ''
       },
       newStep: {
         name: '',
@@ -214,7 +214,7 @@ export default {
         name: '',
         description: '',
         cicle: false,
-        amount: 0
+        amount: ''
       },
       steps: [],
       openAddChild: false,
@@ -256,7 +256,8 @@ export default {
     },
     addChild: function () {
       var loader = this.$loading.show()
-      var newnode = _.extend(this.newnode, {idParentNode: this.model.id})
+      var newnode = _.extend(_.clone(this.newnode), {idParentNode: this.model.id})
+      newnode.amount = parseFloat(newnode.amount)
       node.create(newnode)
         .then((result) => {
           loader.hide()
@@ -289,17 +290,18 @@ export default {
     },
     addStep: function () {
       var loader = this.$loading.show()
-
-      this.newStep.idNode = this.model.id
-      node.createStages(this.newStep)
+      var params = _.clone(this.newStep)
+      params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
+      params.idNode = this.model.id
+      node.createStages(params)
         .then((result) => {
           loader.hide()
           // console.log(result)
           if (result.status === 201) {
             this.steps.push({
-              name: this.newStep.name,
-              dateInit: this.newStep.dateInit,
-              isProject: this.newStep.isproject,
+              name: params.name,
+              dateInit: params.dateInit,
+              isProject: params.isproject,
               id: result.data.id
             })
 
@@ -315,7 +317,9 @@ export default {
     updateNode: function () {
       var loader = this.$loading.show()
       // this.showDeleteModal = false
-      node.update(this.model.id, this.updateNodeData)
+      let params = _.clone(this.updateNodeData)
+      params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
+      node.update(this.model.id, params)
         .then((result) => {
           loader.hide()
           if (result.status === 200) {
