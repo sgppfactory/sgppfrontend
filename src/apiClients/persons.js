@@ -4,6 +4,9 @@ export default {
   getFilter: function (params) {
     return basicClient('/person', 'GET', params)
   },
+  // getFilterAsync: async function (params) {
+  //   return await basicClient('/person', 'GET', params)
+  // },
   post: function (params) {
     return basicClient('/person', 'POST', params)
   },

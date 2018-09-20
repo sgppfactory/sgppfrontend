@@ -2,7 +2,7 @@ import {basicClient} from '../utils/httpClient'
 
 export default {
   getStages: (idNode) => {
-    return idNode ? basicClient('/node/' + idNode + '/stages', 'GET') : false
+    return idNode ? basicClient('/nodes/' + idNode + '/stages', 'GET') : false
   },
   create: (params) => {
     return basicClient('/nodes', 'POST', params)

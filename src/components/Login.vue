@@ -65,7 +65,6 @@ export default {
         this.$router.push('home')
       }).catch((error) => {
         loader.hide()
-        // console.log(error)
         if (error.response) {
           this.messageError = error.response.data.msg
         } else {

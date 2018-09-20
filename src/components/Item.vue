@@ -186,6 +186,7 @@ import Vue from 'vue'
 import _ from 'underscore'
 import datePicker from 'vue-bootstrap-datetimepicker'
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css'
+import {formatResponse} from '../utils/tools.js'
 
 export default {
   name: 'Item',
@@ -291,12 +292,10 @@ export default {
     addStep: function () {
       var loader = this.$loading.show()
       var params = _.clone(this.newStep)
-      params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
       params.idNode = this.model.id
       node.createStages(params)
         .then((result) => {
           loader.hide()
-          // console.log(result)
           if (result.status === 201) {
             this.steps.push({
               name: params.name,
@@ -304,7 +303,6 @@ export default {
               isProject: params.isproject,
               id: result.data.id
             })
-
             this.showSuccessMsg(result)
           } else {
             this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
@@ -368,29 +366,18 @@ export default {
         }).catch(this.getErrorMessage)
     },
     getErrorMessage (result) {
-      result = result.response
-      let message = ''
-      if (result.status === 404 || result.status === 500) {
-        message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
-      } else if (result.status === 401) {
-        this.logout()
-      } else {
-        message = result.data.message
-        if (_.isArray(message)) {
-          message = _.reduce(
-            message,
-            (memo, msg) => {
-              return memo + msg.message + '<br>'
-            }, '')
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
         }
-      }
-
-      this.$notify({
-        group: 'error',
-        title: 'Ops!',
-        text: message,
-        type: 'error',
-        position: 'bottom right'
       })
     },
     showSuccessMsg (result) {

@@ -26,6 +26,25 @@
               </b-form-select>
             </b-form-group>
 
+            <b-form-group label="Personas relacionadas:" label-for="idNode">
+              <!-- <b-input-group prepend="search"> -->
+                <vue-bootstrap-typeahead 
+                              :data="personsSearched"
+                              v-model="searchPerson"
+                              :serializer="s => s.lastname + ', ' + s.name"
+                              placeholder="Ingrese nombre y apellido de una persona"
+                              @hit="selectPerson"
+                              @input="searchPersons" />
+              <!-- </b-input-group> -->
+              <div id="personasSeleccionadas" class>
+                <span v-for="value in personsSelected" 
+                      :id="value.id"
+                      class="btn btn-primary btn-sm">
+                  {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" v-b-tooltip.hover title="No asociar a la persona"><icon name="close" height="10"/></a>
+                </span>
+              </div>
+            </b-form-group>
+
             <b-form-group label="Monto:" label-for="amount" prepend="$">
               <b-input-group prepend="$">
                 <b-form-input id="amount"
@@ -43,10 +62,10 @@
             </b-form-group>
           </b-col>
           <b-col>
-            <b-form-group label="Ubicación:" label-for="location">
+            <b-form-group label="Domicilio:" label-for="location">
               <b-form-input id="location"
                             v-model.trim="form.location"
-                            placeholder="Ingresar una ubicación">
+                            placeholder="Ingresar una dirección">
               </b-form-input>
             </b-form-group>
 
@@ -71,14 +90,17 @@
 import 'vue-awesome/icons'
 import porpose from '../apiClients/porpose'
 import node from '../apiClients/node'
+import persons from '../apiClients/persons'
 import Menu from '@/components/Menu'
+import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
 import _ from 'underscore'
 import {formatResponse} from '../utils/tools.js'
 
 export default {
   name: 'AddPorpose',
   components: {
-    'app-menu': Menu
+    'app-menu': Menu,
+    'vue-bootstrap-typeahead': VueBootstrapTypeahead
   },
   data () {
     return {
@@ -102,7 +124,10 @@ export default {
         location: '',
         amount: ''
       },
-      optionsNodes: []
+      optionsNodes: [],
+      personsSelected: [],
+      personsSearched: [],
+      searchPerson: ''
     }
   },
   computed: {
@@ -147,6 +172,9 @@ export default {
         params.id = this.$route.params.porposeId
       }
       params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
+      params.persons = _.map(this.personsSelected, (pers) => {
+        return pers.id
+      })
       porpose.post(params)
         .then((result) => {
           if (result.status === 201) {
@@ -173,8 +201,37 @@ export default {
         amount: ''
       }
     },
-    setError (input) {
+    // setErrorInput (input) {
+    // },
+    deletePerson (id) {
+      this.personsSelected = _.reject(
+        this.personsSelected, 
+        (obj) => { 
+          return obj.id === id 
+        }
+      )
+    },
+    searchPersons (value) {
+      var params = this.searchPerson ? {
+        filter: [
+          {key: 'name', value: this.searchPerson, operator: 'like', operator_sup: 'OR'},
+          {key: 'lastname', value: this.searchPerson, operator: 'like', operator_sup: 'OR'},
+          {key: 'email', value: this.searchPerson, operator: 'like', operator_sup: 'OR'}
+        ]
+      } : {}
 
+      params.bypage = 5
+
+      persons.getFilter(params)
+        .then((result) => {
+          this.personsSearched = (result.status === 200)
+            ? result.data.result
+            : []
+        })
+    },
+    selectPerson (value) {
+      this.personsSelected.push(value)
+      this.searchPerson = ""
     },
     getErrorMessage (result) {
       formatResponse(result, (err) => {
@@ -211,5 +268,8 @@ li {
 }
 a {
   color: #42b983;
+}
+#personasSeleccionadas {
+  margin-top: 10px;
 }
 </style>
