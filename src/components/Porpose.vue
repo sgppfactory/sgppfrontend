@@ -24,15 +24,17 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <router-link :to="{ name: 'addporpose', query: { personId: row.item.id }}" v-b-tooltip.hover title="Modificar Propuesta / Proyecto"> 
+          <router-link :to="{ name: 'addporpose', query: { porposeId: row.item.id }}" 
+                        v-b-tooltip.hover 
+                        title="Modificar Propuesta / Proyecto"> 
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
           <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
-          <a @click="toRemove=row.item.id" v-b-tooltip.hover title="Borrar Propuesta / Proyecto" v-b-modal.deleteModal class="danger">
-            <icon name="remove" />
+          <a @click="toChange=row.item.id" v-b-tooltip.hover title="Cambiar Estado" v-b-modal.changeState>
+            <icon name="level-up" />
           </a>
         </template>
         <template slot="empty">¡Sin propuestas o proyectos para mostrar!</template>
@@ -47,19 +49,24 @@
       <b-row>
         <b-col sm="9">
           <b-pagination-nav :link-gen="getLinkPag" 
-                  :number-of-pages="cantPages" 
-                  v-model="currentPage" />
+                            :number-of-pages="cantPages" 
+                            v-model="currentPage" />
         </b-col>
         <b-col sm="3" align="center">Registros: {{cantResults}}</b-col>
       </b-row>
       <notifications group="success" />
       <notifications group="error" />
     </b-container>
-    <b-modal id="deleteModal" v-model="show" title="Eliminar Propuesta">
-      <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
+    <b-modal id="changeState" v-model="show" title="Cambiar estado de la Propuesta / Proyecto">
+      <p class="my-2">La propuesta cambia de estado a:</p>
+      <b-form-select  id="state" 
+                      placeholder="Seleccionar un estado" 
+                      v-model="changeParam" 
+                      :options="optionsNodes">
+      </b-form-select>
       <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="deleteporpose()">
-         Eliminar
+       <b-btn size="sm" variant="danger" @click="changeState">
+         Cambiar
        </b-btn>
        <b-btn size="sm" variant="primary" @click="show=false">
          Cancelar
@@ -85,10 +92,28 @@ export default {
       porposeprojects: [],
       fields: [
         {label: 'Título', key: 'title', sortable: true},
-        {label: 'Nodo', key: 'id_node', sortable: true},
-        {label: 'Etapa', key: 'id_stage', sortable: true},
+        {
+          label: 'Nodo', 
+          key: 'node', 
+          formatter: (value) => { 
+            return value ? value.name : '' 
+          }
+        },
+        {
+          label: 'Etapa', 
+          key: 'stage', 
+          formatter: (value) => { 
+            return value ? value.name : '' 
+          }
+        },
         {label: 'Estado', key: 'state'},
-        {label: 'Ciclo', key: 'id_cicle'},
+        {
+          label: 'Ciclo', 
+          key: 'cicle', 
+          formatter: (value) => { 
+            return value ? value.date : '' 
+          }
+        },
         {label: 'Opciones', key: 'actions', 'class': 'text-center'}
       ],
       currentPage: 1,
@@ -96,9 +121,9 @@ export default {
       cantPages: 1,
       cantResults: 1,
       show: false,
-      toRemove: 0,
+      toChange: 0,
       isBusy: false,
-      sortBy: 'name',
+      sortBy: 'title',
       sortDesc: false
     }
   },
@@ -120,7 +145,7 @@ export default {
       this.$router.push('/login')
     },
     getLinkPag (page) {
-      return '#/porpose?page=' + page
+      return '#/porposes_projects?page=' + page
     },
     search (page) {
       var loader = this.$loading.show()
@@ -140,6 +165,7 @@ export default {
 
       porpose.getFilter(params)
         .then((result) => {
+          // console.log(result.data.result)
           loader.hide()
           this.porposeprojects = (result.status === 200)
           ? result.data.result
@@ -203,6 +229,9 @@ export default {
           })
         }
       })
+    },
+    changeState () {
+
     }
   }
 }

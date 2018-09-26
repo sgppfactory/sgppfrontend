@@ -26,21 +26,41 @@
               </b-form-select>
             </b-form-group>
 
-            <b-form-group label="Personas relacionadas:" label-for="idNode">
+            <b-form-group label="Personas relacionadas:" label-for="persons">
               <!-- <b-input-group prepend="search"> -->
-                <vue-bootstrap-typeahead 
-                              :data="personsSearched"
-                              v-model="searchPerson"
-                              :serializer="s => s.lastname + ', ' + s.name"
-                              placeholder="Ingrese nombre y apellido de una persona"
-                              @hit="selectPerson"
-                              @input="searchPersons" />
+              <vue-bootstrap-typeahead :data="personsSearched"
+                                        v-model="searchPerson"
+                                        :serializer="s => s.lastname + ', ' + s.name"
+                                        placeholder="Ingrese nombre y apellido de una persona"
+                                        @hit="selectPerson"
+                                        @input="searchPersons" />
               <!-- </b-input-group> -->
-              <div id="personasSeleccionadas" class>
+              <div id="personsSelectedId" class>
                 <span v-for="value in personsSelected" 
-                      :id="value.id"
                       class="btn btn-primary btn-sm">
                   {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" v-b-tooltip.hover title="No asociar a la persona"><icon name="close" height="10"/></a>
+                </span>
+              </div>
+            </b-form-group>
+
+            <b-form-group label="Etiquetas relacionadas:" label-for="tags">
+              <!-- <b-input-group prepend="search"> -->
+              <vue-bootstrap-typeahead :data="tagsSearched"
+                                        v-model="searchTags"
+                                        :serializer="s => s.lastname + ', ' + s.name"
+                                        placeholder="Ingrese una etiqueta"
+                                        @hit="selectTag"
+                                        @input="searchTag" />
+              <!-- </b-input-group> -->
+              <div id="tagsSelectedId" class>
+                <span v-for="value in tagsSelected" 
+                      :id="value.id"
+                      class="btn btn-primary btn-sm">
+                  {{value.name}} <a @click="deleteTag(value.id)" 
+                                    v-b-tooltip.hover 
+                                    title="No asociar la etiqueta a la propuesta">
+                                    <icon name="close" height="10"/>
+                                  </a>
                 </span>
               </div>
             </b-form-group>
@@ -63,9 +83,13 @@
           </b-col>
           <b-col>
             <b-form-group label="Domicilio:" label-for="location">
-              <b-form-input id="location"
-                            v-model.trim="form.location"
-                            placeholder="Ingresar una dirección">
+              <vue-bootstrap-typeahead  id="location"
+                                        :data="locationSearched"
+                                        v-model.trim="form.location"
+                                        :serializer="s => s.lastname + ', ' + s.name"
+                                        placeholder="Ingresar una dirección"
+                                        @hit="selectLocation"
+                                        @input="searchLocation" />
               </b-form-input>
             </b-form-group>
 
@@ -90,6 +114,7 @@
 import 'vue-awesome/icons'
 import porpose from '../apiClients/porpose'
 import node from '../apiClients/node'
+import location from '../apiClients/location'
 import persons from '../apiClients/persons'
 import Menu from '@/components/Menu'
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
@@ -127,6 +152,7 @@ export default {
       optionsNodes: [],
       personsSelected: [],
       personsSearched: [],
+      locationSearched: [],
       searchPerson: ''
     }
   },
@@ -135,9 +161,6 @@ export default {
       return {
         'is-invalid': this.messageError !== ''
       }
-    },
-    showErrorMsg: function () {
-      return this.messageError !== ''
     }
   },
   created () {
@@ -247,6 +270,12 @@ export default {
           })
         }
       })
+    },
+    selectLocation () {
+
+    },
+    searchLocation () {
+
     }
   }
 }
@@ -269,7 +298,7 @@ li {
 a {
   color: #42b983;
 }
-#personasSeleccionadas {
+#personsSelectedId {
   margin-top: 10px;
 }
 </style>

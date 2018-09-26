@@ -1,56 +1,60 @@
 <template>
   <div class="login">
-    <div :is="menuComponent"></div>
+    <app-menu></app-menu>
     <b-breadcrumb :items="bread"/>
     <b-container>
       <h1>{{title}}</h1>
-
-      <b-alert variant="danger"
-             dismissible
-             :show="showDismissibleAlert"
-             @dismissed="showDismissibleAlert=false">
-        {{errorMessage}}
-      </b-alert>
-
-      <b-alert :show="dismissCountDown"
-               dismissible
-               variant="success"
-               @dismissed="dismissCountDown=0"
-               @dismiss-count-down="countDownChanged">
-        <p>Persona creada satisfactoriamente!</p>
-        <b-progress variant="success"
-                    :max="dismissSecs"
-                    :value="dismissCountDown"
-                    height="4px">
-        </b-progress>
-      </b-alert>
       <b-form @submit="update">
         <b-row>
           <b-col>
             <h3>Cambiar contraseña</h3>
             <b-form-group label="Modifique su contraseña:" label-for="password">
-              <b-form-input id="password" type="password" v-model="password" placeholder="Modificar Contraseña" v-bind:class="formClass">
+              <b-form-input id="password" 
+                            type="password" 
+                            v-model.trim="form.password" 
+                            placeholder="Modificar Contraseña" 
+                            v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
             <b-form-group label="Confirme su nueva contraseña:" label-for="repassword">
-              <b-form-input id="repassword" type="password" v-model="rePassword" placeholder="Confirmar nueva contraseña" v-bind:class="formClass">
+              <b-form-input id="repassword" 
+                            type="password" 
+                            v-model.trim="form.rePassword" 
+                            placeholder="Confirmar nueva contraseña" 
+                            v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
             <h3>Datos personales</h3>
             <b-form-group label="Email:" label-for="email">
-              <b-form-input id="email" type="email" v-model="email" placeholder="Modificar email" v-bind:class="formClass">
+              <b-form-input id="email" 
+                            type="email" 
+                            v-model.trim="form.email" 
+                            placeholder="Modificar email" 
+                            v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
             <b-form-group label="Celular:" label-for="cel">
-              <b-form-input id="cel" type="text" v-model="cel" placeholder="Agregar teléfono móvil" v-bind:class="formClass">
+              <b-form-input id="cel" 
+                            type="text" 
+                            v-model.trim="form.cel" 
+                            placeholder="Agregar teléfono móvil" 
+                            v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
             <b-form-group label="Teléfono:" label-for="phone">
-              <b-form-input id="phone" type="text" v-model="phone" placeholder="Agregar teléfono fijo" v-bind:class="formClass">
+              <b-form-input id="phone" 
+                            type="text" 
+                            v-model.trim="form.phone" 
+                            placeholder="Agregar teléfono fijo" 
+                            v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
             <b-form-group label="Fecha nacimiento:" label-for="location">
-              <b-form-input id="date_birth" type="date" v-model="date_birth" placeholder="Agregar fecha nacimiento" v-bind:class="formClass">
+              <b-form-input id="date_birth" 
+                            type="date" 
+                            v-model.trim="form.date_birth" 
+                            placeholder="Agregar fecha nacimiento" 
+                            v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
           </b-col>
@@ -77,6 +81,8 @@
         <b-button type="submit" variant="primary">Modificar</b-button>
       </b-form>
     </b-container>
+    <notifications group="success" />
+    <notifications group="error" />
   </div>
 </template>
 <!--   <div align="center">
@@ -86,15 +92,17 @@
 <script>
 import user from '../apiClients/auth'
 import Menu from '@/components/Menu'
+import {formatResponse} from '../utils/tools.js'
 
 export default {
   name: 'Login',
+  components: {
+    'app-menu': Menu,
+  },  
   data () {
     return {
       title: 'Configuración de usuario',
       errorMessage: '',
-      menuComponent: undefined,
-      dismissCountDown: 0,
       form: {
         password: '',
         rePassword: '',
@@ -115,52 +123,60 @@ export default {
       logins: [],
       fields: [
         {label: 'IP', key: 'ip'},
-        {label: 'Fecha', key: 'date_hour'}
+        {label: 'Fecha', key: 'dateHour'}
       ]
     }
   },
   created () {
-    this.menuComponent = Menu
-    user.getLogAuth((response) => {
-      if (response.data) {
-        this.logins = response.data.results
-      }
-    }).catch((error) => {
-      if (error.response) {
-        this.messageError = error.response.data.msg
-      } else {
-        this.messageError = 'Error indefinido'
-      }
-    })
+    var loader = this.$loading.show()
+    user.getLogUser()
+      .then((response) => {
+        loader.hide()
+        if (response.data) {
+          this.logins = response.data.message
+        }
+      }).catch((error) => {
+        loader.hide()
+        this.getErrorMessage(error)
+      })
   },
   computed: {
     formClass: function () {
       return {
         'is-invalid': this.errorMessage !== ''
       }
-    },
-    showErrorMsg: function () {
-      return this.errorMessage !== ''
     }
   },
   methods: {
     update (evt) {
+      var loader = this.$loading.show()
       evt.preventDefault()
       user.update(this.form)
         .then((response) => {
+          loader.hide()
           if (response) {
 
           }
-          this.messageError = ''
           // this.$router.push('home')
         }).catch((error) => {
-          console.log(error)
-          if (error.response) {
-            this.messageError = error.response.data.msg
-          } else {
-            this.messageError = 'Error indefinido'
-          }
+          loader.hide()
+          this.getErrorMessage(error)
         })
+    },
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
     }
   }
 }

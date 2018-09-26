@@ -11,6 +11,6 @@ export default {
     return basicClient('/user', 'PUT', params)
   },
   getLogUser: function (params) {
-    return basicClient('/user/log', 'GET', params)
+    return basicClient('/user/log', 'GET')
   }
 }
