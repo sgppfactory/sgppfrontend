@@ -53,6 +53,7 @@
                                         @input="searchTag" />
               <!-- </b-input-group> -->
               <div id="tagsSelectedId" class>
+                <!-- <b-badge pill variant="dark">Dark</b-badge> -->
                 <span v-for="value in tagsSelected" 
                       :id="value.id"
                       class="btn btn-primary btn-sm">

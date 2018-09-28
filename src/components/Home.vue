@@ -3,43 +3,44 @@
     <app-menu></app-menu>
     <div class="container">
       <b-row>
-        <b-col>
-          <h4>{{ msg }}</h4>
+        <b-col sm="7">
+          <h3 class="mb-8">{{ title }}</h3>
         </b-col>
-        <b-col>
-          <h3>{{ title }}</h3>
+        <b-col sm="5">
+          <h4 class="mb-8">{{ msg }}</h4>
         </b-col>
       </b-row>
       <b-row>
-        <b-col>
-          <ul class="list-unstyled">
-            <b-media vertical-align="center" tag="li">
+        <b-col sm="7">
+          <!-- <div> -->
+          <b-row>
+            <b-col>
+              <b-alert show variant="primary" class="mb-8 text-center">
+                 {{porposeEnabled}} propuestas activas!
+              </b-alert>
+            </b-col>
+            <b-col>
+              <b-alert show variant="secondary" class="mb-8 text-center">
+                 {{projectsEnabled}} proyectos activos!
+              </b-alert>
+            </b-col>
+          </b-row>
+          <!-- </div> -->
+
+          <full-calendar 
+            ref="calendar" 
+            :config="config"
+            :events="events">    
+          </full-calendar>
+        </b-col>
+        <b-col sm="5">
+          <ul class="list-unstyled ml-4">
+            <b-media vertical-align="center" tag="li" class="my-1" v-for="(activities, index) in lastActivities">
               <b-img slot="aside" blank blank-color="#abc" width="64" alt="placeholder" />
-              <h5 class="mt-0 mb-1">List-based media object</h5>
-              Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque
-              ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus
-              viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec
-              lacinia congue felis in faucibus.
-            </b-media>
-            <b-media tag="li" class="my-4" vertical-align="center">
-              <b-img slot="aside" blank blank-color="#cba" width="64" alt="placeholder" />
-              <h5 class="mt-0 mb-1">List-based media object</h5>
-              Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque
-              ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus
-              viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec
-              lacinia congue felis in faucibus.
-            </b-media>
-            <b-media tag="li" vertical-align="center">
-              <b-img slot="aside" blank blank-color="#bac" width="64" alt="placeholder" />
-              <h5 class="mt-0 mb-1">List-based media object</h5>
-              Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque
-              ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus
-              viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec
-              lacinia congue felis in faucibus.
+              <h5 class="mt-0 mb-1">{{activities.title}}</h5>
+              {{activities.details}}
             </b-media>
           </ul>
-        </b-col>
-        <b-col>
         </b-col>
       </b-row>
     </div>
@@ -48,19 +49,94 @@
 
 <script>
 import Menu from '@/components/Menu'
+import implementation from '@/apiClients/implementation'
+import user from '@/apiClients/auth'
+import porpose from '@/apiClients/porpose'
+import { FullCalendar } from 'vue-full-calendar'
+import 'fullcalendar/dist/fullcalendar.css'
+import 'fullcalendar/dist/locale/es'
+
 export default {
   name: 'Home',
   components: {
-    'app-menu': Menu
+    'app-menu': Menu,
+    FullCalendar
   },
   data () {
     return {
       title: 'Bienvenido/a',
-      msg: 'Qué sucede en ...?'
+      msg: 'Qué sucede en ',
+      lastActivities: [],
+      porposeEnabled: 0,
+      projectsEnabled: 0,
+      events: [],
+      config: {
+        eventClick: (event) => {
+          this.selected = event
+        },
+        locale: 'es',
+        defaultView: 'listWeek',
+        // views: {
+        //   listDay: { buttonText: 'list day' },
+        //   listWeek: { buttonText: 'list week' },
+        //   listMonth: { buttonText: 'list month' }
+        // },
+        header: {
+          left: '',
+          center: 'title',
+          right: ''
+        },
+      }
     }
   },
-  beforeCreate () {
-    document.body.className = ''
+  created () {
+    var params = {}
+    params.bypage = 5
+    // params.orderby = 5
+    porpose.getFilter(params)
+      .then((response) => {
+        // console.log(response)
+        // loader.hide()
+        this.lastActivities = (response.status === 200)
+          ? response.data.result
+          : []
+        this.porposeEnabled = response.data ? response.data.total : 0
+      }).catch((error) => {
+        // loader.hide()
+        this.getErrorMessage(error)
+      })
+
+    implementation.get()
+      .then((result) => {
+        if (result.status === 200) {
+          let implData = JSON.parse(result.data.message)
+          if (implData) {
+            this.msg = this.msg + implData.name + '?'
+          } else {
+            this.msg += '...'
+          }
+        }
+      }).catch(() => {
+        // this.logout()
+      })
+
+    user.getUserPerson()
+      .then((result) => {
+        if (result.status === 200) {
+          let userData = result.data.message
+          if (userData) {
+            this.title = this.title + ' ' + userData.name + '!'
+          }
+        }
+      }).catch(() => {
+        // this.logout()
+      })
+  },
+  methods: {
+    logout () {
+      localStorage.jwt = ''
+      this.$router.push('login')
+    }
   }
 }
 </script>
@@ -70,14 +146,14 @@ export default {
 h1, h2 {
   font-weight: normal;
 }
-ul {
+/*ul {
   list-style-type: none;
   padding: 0;
 }
 li {
   display: inline-block;
   margin: 0 10px;
-}
+}*/
 a {
   color: #42b983;
 }

@@ -4,12 +4,9 @@
     <b-container fluid>
       <h1>{{ title }}</h1>
       <b-row class="">
-        <b-col sm="10">
-          <!-- <b-form inline @submit="search">
-            <b-input class="mb-2 mr-sm-2 mb-sm-0" id="searchTasks" placeholder="Buscar tareas" v-model="searchParam" />
-          </b-form> -->
-        </b-col>
-        <b-col sm="2">
+        <!-- <b-col sm="10">
+        </b-col> -->
+        <b-col sm="12">
           <b-button variant="primary" href="#/addtasks">
             <icon name="plus" height="10" /> Nueva Tarea
           </b-button>

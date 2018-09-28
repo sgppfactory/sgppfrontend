@@ -10,7 +10,10 @@ export default {
   update: function (params) {
     return basicClient('/user', 'PUT', params)
   },
-  getLogUser: function (params) {
+  getLogUser: function () {
     return basicClient('/user/log', 'GET')
+  },
+  getUserPerson: function () {
+    return basicClient('/user/person', 'GET')
   }
 }
