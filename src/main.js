@@ -15,7 +15,8 @@ import Loading from 'vue-loading-overlay'
 
 Vue.use(VueGoogleMaps, {
   load: {
-    key: json.gmaps
+    key: json.gmaps,
+    libraries: 'places'
     // v: 'OPTIONAL VERSION NUMBER'
   }
 })

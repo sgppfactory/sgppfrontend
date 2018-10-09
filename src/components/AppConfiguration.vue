@@ -48,9 +48,10 @@
 
 <script>
 import 'vue-awesome/icons'
-import app from '../apiClients/configuration'
+import app from '@/apiClients/configuration'
 import Menu from '@/components/Menu'
 import Item from '@/components/Item'
+import {formatResponse} from '@/utils/tools.js'
 
 export default {
   components: {
@@ -85,21 +86,18 @@ export default {
       this.$router.push('login')
     },
     getErrorMessage (result) {
-      let message = ''
-      if (result.status === 404 || result.status === 500) {
-        message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
-      } else if (result.status === 401) {
-        this.logout()
-      } else {
-        message = result.data.message
-      }
-
-      this.$notify({
-        group: 'error',
-        title: 'Ops!',
-        text: message,
-        type: 'error',
-        position: 'bottom right'
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
       })
     },
     remove: function (id) {

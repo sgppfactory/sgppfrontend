@@ -57,18 +57,18 @@
       <notifications group="success" />
       <notifications group="error" />
     </b-container>
-    <b-modal id="changeState" v-model="show" title="Cambiar estado de la Propuesta / Proyecto">
+    <b-modal id="changeState" v-model="showChangeState" title="Cambiar estado de la Propuesta / Proyecto">
       <p class="my-2">La propuesta cambia de estado a:</p>
       <b-form-select  id="state" 
                       placeholder="Seleccionar un estado" 
-                      v-model="changeParam" 
+                      v-model="stateSelect" 
                       :options="optionsNodes">
       </b-form-select>
       <div slot="modal-footer" class="w-100 text-right">
        <b-btn size="sm" variant="danger" @click="changeState">
          Cambiar
        </b-btn>
-       <b-btn size="sm" variant="primary" @click="show=false">
+       <b-btn size="sm" variant="primary" @click="showChangeState=false">
          Cancelar
        </b-btn>
      </div>
@@ -79,8 +79,10 @@
 
 <script>
 import 'vue-awesome/icons'
-import porpose from '../apiClients/porpose'
+import porpose from '@/apiClients/porpose'
 import Menu from '@/components/Menu'
+import {formatResponse} from '../utils/tools.js'
+import _ from 'underscore'
 export default {
   name: 'PorposesProjects',
   components: {
@@ -93,25 +95,44 @@ export default {
       fields: [
         {label: 'Título', key: 'title', sortable: true},
         {
-          label: 'Nodo', 
-          key: 'node', 
-          formatter: (value) => { 
-            return value ? value.name : '' 
+          label: 'Nodo',
+          key: 'node',
+          formatter: (value) => {
+            return value ? value.name : ''
           }
         },
         {
-          label: 'Etapa', 
-          key: 'stage', 
-          formatter: (value) => { 
-            return value ? value.name : '' 
+          label: 'Tipo',
+          key: 'type',
+          formatter: (value) => {
+            return value === 2 ? 'Proyecto' : 'Propuesta'
+          }
+        },
+        {
+          label: 'Etapa',
+          key: 'stage',
+          formatter: (value) => {
+            return value ? value.name : ''
+          }
+        },
+        {
+          label: 'Creación',
+          key: 'created_at',
+          sortable: true,
+          formatter: (value) => {
+            if (value) {
+              let dateP = new Date(value)
+              return dateP.getDate() + '/' + (dateP.getMonth() + 1) + '/' + dateP.getFullYear()
+            }
+            return ''
           }
         },
         {label: 'Estado', key: 'state'},
         {
-          label: 'Ciclo', 
-          key: 'cicle', 
-          formatter: (value) => { 
-            return value ? value.date : '' 
+          label: 'Ciclo',
+          key: 'cicle',
+          formatter: (value) => {
+            return value ? value.date : ''
           }
         },
         {label: 'Opciones', key: 'actions', 'class': 'text-center'}
@@ -120,11 +141,13 @@ export default {
       searchParam: '',
       cantPages: 1,
       cantResults: 1,
-      show: false,
+      showChangeState: false,
       toChange: 0,
       isBusy: false,
       sortBy: 'title',
-      sortDesc: false
+      sortDesc: false,
+      optionsNodes: [],
+      stateSelect: ''
     }
   },
   computed: {
@@ -165,40 +188,23 @@ export default {
 
       porpose.getFilter(params)
         .then((result) => {
-          // console.log(result.data.result)
+          // console.log(JSON.parse(result.data.result))
           loader.hide()
           this.porposeprojects = (result.status === 200)
-          ? result.data.result
-          : []
+            ? _.map(
+                result.data.result,
+                (porpose) => {
+                  return porpose.type === 2 ? _.extend(porpose, { _rowVariant : 'success' }) : porpose
+                }
+              )
+            : []
 
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((error) => {
+          console.log(error)
           loader.hide()
-          this.getErrorMessage(result)
-        })
-    },
-    deleteporpose () {
-      var loader = this.$loading.show()
-      porpose.remove(this.toRemove)
-        .then((result) => {
-          // console.log(result)
-          if (result.status === 200) {
-            this.toRemove = 0
-            this.show = false
-            this.$notify({
-              group: 'success',
-              title: 'Ok!',
-              text: result.data.message,
-              type: 'success',
-              position: 'bottom right'
-            })
-            loader.hide()
-            this.search(this.$route.query.page)
-          }
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(result)
+          this.getErrorMessage(error)
         })
     },
     showDetails (id) {
@@ -208,11 +214,11 @@ export default {
           loader.hide()
           if (result.status === 200) {
             this.toRemove = 0
-            // console.log(result)
+            this.showSuccessMsg(result)
           }
         }).catch((error) => {
           loader.hide()
-          this.getErrorMessage(result)
+          this.getErrorMessage(error)
         })
     },
     getErrorMessage (result) {
@@ -231,7 +237,26 @@ export default {
       })
     },
     changeState () {
-
+      var loader = this.$loading.show()
+      porpose
+        .changeState(this.toChange, this.showChangeState)
+        .then((result) => {
+          loader.hide()
+          this.showChangeState = false
+          this.showSuccessMsg(result)
+        }).catch((err) => {
+          loader.hide()
+          this.getErrorMessage(err)
+        })
+    },
+    showSuccessMsg (result) {
+      this.$notify({
+        group: 'success',
+        title: 'Ok!',
+        text: result.data.message,
+        type: 'success',
+        position: 'bottom right'
+      })
     }
   }
 }

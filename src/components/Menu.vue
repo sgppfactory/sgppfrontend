@@ -81,8 +81,6 @@ export default {
         }
       }).catch(() => {
         this.logout()
-        // if (error.status == 409) {
-        // }
       })
 
     implementation.get()

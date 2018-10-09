@@ -4,7 +4,7 @@
     <b-breadcrumb :items="bread"/>
     <b-container>
       <h1>{{title}}</h1>
-      <b-form @submit="update">
+      <b-form @submit="update" @reset="resetForm">
         <b-row>
           <b-col>
             <h3>Cambiar contraseña</h3>
@@ -25,7 +25,7 @@
               </b-form-input>
             </b-form-group>
             <h3>Datos personales</h3>
-            <b-form-group label="Email:" label-for="email">
+            <b-form-group label="E-mail:" label-for="email">
               <b-form-input id="email" 
                             type="email" 
                             v-model.trim="form.email" 
@@ -49,7 +49,7 @@
                             v-bind:class="formClass">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Fecha nacimiento:" label-for="location">
+            <b-form-group label="Fecha de nacimiento:" label-for="location">
               <b-form-input id="date_birth" 
                             type="date" 
                             v-model.trim="form.date_birth" 
@@ -79,6 +79,7 @@
           </b-col>
         </b-row>
         <b-button type="submit" variant="primary">Modificar</b-button>
+        <b-button type="reset" variant="danger">Cancelar</b-button>
       </b-form>
     </b-container>
     <notifications group="success" />
@@ -90,15 +91,15 @@
   </div> -->
 
 <script>
-import user from '../apiClients/auth'
+import user from '@/apiClients/auth'
 import Menu from '@/components/Menu'
-import {formatResponse} from '../utils/tools.js'
+import {formatResponse} from '@/utils/tools.js'
 
 export default {
   name: 'Login',
   components: {
-    'app-menu': Menu,
-  },  
+    'app-menu': Menu
+  },
   data () {
     return {
       title: 'Configuración de usuario',
@@ -157,7 +158,6 @@ export default {
           if (response) {
 
           }
-          // this.$router.push('home')
         }).catch((error) => {
           loader.hide()
           this.getErrorMessage(error)
@@ -177,6 +177,9 @@ export default {
           })
         }
       })
+    },
+    resetForm () {
+      this.$router.push('/home')
     }
   }
 }

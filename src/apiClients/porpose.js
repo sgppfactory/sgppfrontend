@@ -15,5 +15,13 @@ export default {
   },
   getById: function (id) {
     return basicClient('/porpose/' + id, 'GET')
+  },
+  changeState: function (id, state) {
+    if (id && state) {
+      return basicClient('/porpose/' + id + '/state', 'PUT', {state: state})
+    }
+    return new Promise((resolve, reject) => {
+      reject('Faltan parámetros en la consulta')
+    })
   }
 }

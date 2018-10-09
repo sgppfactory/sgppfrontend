@@ -46,7 +46,7 @@
             <b-form-group label="Etiquetas relacionadas:" label-for="tags">
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="tagsSearched"
-                                        v-model="searchTags"
+                                        v-model.trim="searchTags"
                                         :serializer="s => s.lastname + ', ' + s.name"
                                         placeholder="Ingrese una etiqueta"
                                         @hit="selectTag"
@@ -84,13 +84,22 @@
           </b-col>
           <b-col>
             <b-form-group label="Domicilio:" label-for="location">
-              <vue-bootstrap-typeahead  id="location"
+<!--               <vue-bootstrap-typeahead  id="location"
                                         :data="locationSearched"
                                         v-model.trim="form.location"
                                         :serializer="s => s.lastname + ', ' + s.name"
                                         placeholder="Ingresar una dirección"
                                         @hit="selectLocation"
-                                        @input="searchLocation" />
+                                        @input="searchLocation" /> -->
+                <gmap-autocomplete  id="location"
+                                    :value="form.location"
+                                    placeholder="Ingresar una dirección"
+                                    @place_changed="setPlace"
+                                    :options="{
+                                      bounds: {lat:-34.097695, lng:-59.030265},
+                                      strictBounds: true
+                                    }">
+                </gmap-autocomplete>
               </b-form-input>
             </b-form-group>
 
@@ -113,14 +122,15 @@
 
 <script>
 import 'vue-awesome/icons'
-import porpose from '../apiClients/porpose'
-import node from '../apiClients/node'
-import location from '../apiClients/location'
-import persons from '../apiClients/persons'
+import porpose from '@/apiClients/porpose'
+import node from '@/apiClients/node'
+import tags from '@/apiClients/labels'
+// import location from '@/apiClients/location'
+import persons from '@/apiClients/persons'
 import Menu from '@/components/Menu'
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
 import _ from 'underscore'
-import {formatResponse} from '../utils/tools.js'
+import {formatResponse} from '@/utils/tools.js'
 
 export default {
   name: 'AddPorpose',
@@ -154,7 +164,10 @@ export default {
       personsSelected: [],
       personsSearched: [],
       locationSearched: [],
-      searchPerson: ''
+      searchPerson: '',
+      tagsSelected: [],
+      searchTags: '',
+      tagsSearched: []
     }
   },
   computed: {
@@ -192,8 +205,8 @@ export default {
       evt.preventDefault()
       var loader = this.$loading.show()
       let params = _.clone(this.form)
-      if (this.$route.params.porposeId) {
-        params.id = this.$route.params.porposeId
+      if (this.$router.params.porposeId) {
+        params.id = this.$router.params.porposeId
       }
       params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
       params.persons = _.map(this.personsSelected, (pers) => {
@@ -229,13 +242,13 @@ export default {
     // },
     deletePerson (id) {
       this.personsSelected = _.reject(
-        this.personsSelected, 
-        (obj) => { 
-          return obj.id === id 
+        this.personsSelected,
+        (obj) => {
+          return obj.id === id
         }
       )
     },
-    searchPersons (value) {
+    searchPersons () {
       var params = this.searchPerson ? {
         filter: [
           {key: 'name', value: this.searchPerson, operator: 'like', operator_sup: 'OR'},
@@ -255,7 +268,7 @@ export default {
     },
     selectPerson (value) {
       this.personsSelected.push(value)
-      this.searchPerson = ""
+      this.searchPerson = ''
     },
     getErrorMessage (result) {
       formatResponse(result, (err) => {
@@ -275,8 +288,30 @@ export default {
     selectLocation () {
 
     },
-    searchLocation () {
+    setPlace (place) {
+      console.log(place)
+    },
+    selectTag (value) {
+      if (value) {
+        this.tagsSelected.push(value)
+        this.searchTags = ''
+      }
+    },
+    searchTag () {
+      var params = this.searchTags ? {
+        filter: [
+          {key: 'name', value: this.searchTags, operator: 'like', operator_sup: 'OR'}
+        ]
+      } : {}
 
+      params.bypage = 5
+
+      tags.getFilter(params)
+        .then((result) => {
+          this.tagsSearched = (result.status === 200)
+            ? result.data.result
+            : []
+        })
     }
   }
 }

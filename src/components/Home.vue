@@ -85,7 +85,7 @@ export default {
           left: '',
           center: 'title',
           right: ''
-        },
+        }
       }
     }
   },
@@ -95,14 +95,11 @@ export default {
     // params.orderby = 5
     porpose.getFilter(params)
       .then((response) => {
-        // console.log(response)
-        // loader.hide()
         this.lastActivities = (response.status === 200)
           ? response.data.result
           : []
         this.porposeEnabled = response.data ? response.data.total : 0
       }).catch((error) => {
-        // loader.hide()
         this.getErrorMessage(error)
       })
 
@@ -116,8 +113,6 @@ export default {
             this.msg += '...'
           }
         }
-      }).catch(() => {
-        // this.logout()
       })
 
     user.getUserPerson()
@@ -128,9 +123,10 @@ export default {
             this.title = this.title + ' ' + userData.name + '!'
           }
         }
-      }).catch(() => {
-        // this.logout()
       })
+  },
+  beforeCreate () {
+    document.body.className = ''
   },
   methods: {
     logout () {
