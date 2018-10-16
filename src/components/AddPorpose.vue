@@ -18,15 +18,15 @@
               </b-form-input>
             </b-form-group>
 
-            <b-form-group label="Nodo:" label-for="idNode">
+            <b-form-group label="Estructura/Nodo:" label-for="idNode">
               <b-form-select id="idnode"
                             v-model="form.idNode"
-                            placeholder="Seleccionar un perfil de usuario"
+                            placeholder="Seleccionar un nodo o estructura"
                             :options="optionsNodes">
               </b-form-select>
             </b-form-group>
 
-            <b-form-group label="Personas relacionadas:" label-for="persons">
+            <b-form-group label="Persona/s relacionada/s:" label-for="persons">
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="personsSearched"
                                         v-model="searchPerson"
@@ -35,15 +35,18 @@
                                         @hit="selectPerson"
                                         @input="searchPersons" />
               <!-- </b-input-group> -->
-              <div id="personsSelectedId" class>
-                <span v-for="value in personsSelected" 
-                      class="btn btn-primary btn-sm">
-                  {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" v-b-tooltip.hover title="No asociar a la persona"><icon name="close" height="10"/></a>
-                </span>
+              <div id="personsSelectedId">
+                <b-badge v-for="value in personsSelected" :id="value.id" pill variant="primary">
+                {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" 
+                                                      v-b-tooltip.hover 
+                                                      title="No asociar a la persona">
+                                                    <icon name="close" height="10"/>
+                                                    </a>
+                </b-badge>
               </div>
             </b-form-group>
 
-            <b-form-group label="Etiquetas relacionadas:" label-for="tags">
+            <b-form-group label="Etiqueta/s relacionada/s:" label-for="tags">
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="tagsSearched"
                                         v-model.trim="searchTags"
@@ -52,17 +55,14 @@
                                         @hit="selectTag"
                                         @input="searchTag" />
               <!-- </b-input-group> -->
-              <div id="tagsSelectedId" class>
-                <!-- <b-badge pill variant="dark">Dark</b-badge> -->
-                <span v-for="value in tagsSelected" 
-                      :id="value.id"
-                      class="btn btn-primary btn-sm">
-                  {{value.name}} <a @click="deleteTag(value.id)" 
+              <div id="tagsSelectedId">
+                <b-badge v-for="value in tagsSelected" :id="value.id" pill variant="dark">
+                {{value.name}} <a @click="deleteTag(value.id)" 
                                     v-b-tooltip.hover 
                                     title="No asociar la etiqueta a la propuesta">
                                     <icon name="close" height="10"/>
                                   </a>
-                </span>
+                </b-badge>
               </div>
             </b-form-group>
 
@@ -83,24 +83,17 @@
             </b-form-group>
           </b-col>
           <b-col>
-            <b-form-group label="Domicilio:" label-for="location">
-<!--               <vue-bootstrap-typeahead  id="location"
-                                        :data="locationSearched"
-                                        v-model.trim="form.location"
-                                        :serializer="s => s.lastname + ', ' + s.name"
-                                        placeholder="Ingresar una dirección"
-                                        @hit="selectLocation"
-                                        @input="searchLocation" /> -->
-                <gmap-autocomplete  id="location"
-                                    :value="form.location"
-                                    placeholder="Ingresar una dirección"
-                                    @place_changed="setPlace"
-                                    :options="{
-                                      bounds: {lat:-34.097695, lng:-59.030265},
-                                      strictBounds: true
-                                    }">
-                </gmap-autocomplete>
-              </b-form-input>
+            <b-form-group label="Ubicación:" label-for="location">
+              <gmap-autocomplete  id="location"
+                                  class="form-control"
+                                  :value="form.location"
+                                  placeholder="Ingresar una ubicación"
+                                  @place_changed="setPlace">
+                                  <!-- :options="{
+                                    bounds: {lat:-34.097695, lng:-59.030265},
+                                    strictBounds: true
+                                  }" -->
+              </gmap-autocomplete>
             </b-form-group>
 
             <gmap-map
@@ -125,7 +118,6 @@ import 'vue-awesome/icons'
 import porpose from '@/apiClients/porpose'
 import node from '@/apiClients/node'
 import tags from '@/apiClients/labels'
-// import location from '@/apiClients/location'
 import persons from '@/apiClients/persons'
 import Menu from '@/components/Menu'
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
@@ -306,11 +298,11 @@ export default {
 
       params.bypage = 5
 
-      tags.getFilter(params)
+      tags.search(params)
         .then((result) => {
           this.tagsSearched = (result.status === 200)
             ? result.data.result
-            : []
+            : [{name: 'Agregar etiqueta: ' + this.searchTags}]
         })
     }
   }

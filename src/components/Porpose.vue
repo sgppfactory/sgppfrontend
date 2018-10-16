@@ -33,7 +33,7 @@
           <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
-          <a @click="toChange=row.item.id" v-b-tooltip.hover title="Cambiar Estado" v-b-modal.changeState>
+          <a @click="openModalChangeState(row.item.id)" v-b-tooltip.hover title="Cambiar Estado"><!-- v-b-modal.changeState -->
             <icon name="level-up" />
           </a>
         </template>
@@ -57,7 +57,7 @@
       <notifications group="success" />
       <notifications group="error" />
     </b-container>
-    <b-modal id="changeState" v-model="showChangeState" title="Cambiar estado de la Propuesta / Proyecto">
+    <b-modal ref="changeState" title="Cambiar estado de la Propuesta / Proyecto">
       <p class="my-2">La propuesta cambia de estado a:</p>
       <b-form-select  id="state" 
                       placeholder="Seleccionar un estado" 
@@ -68,7 +68,7 @@
        <b-btn size="sm" variant="danger" @click="changeState">
          Cambiar
        </b-btn>
-       <b-btn size="sm" variant="primary" @click="showChangeState=false">
+       <b-btn size="sm" variant="primary" @click="hideChangeState">
          Cancelar
        </b-btn>
      </div>
@@ -167,6 +167,19 @@ export default {
       localStorage.jwt = ''
       this.$router.push('/login')
     },
+    openModalChangeState (id) {
+      var loader = this.$loading.show()
+      // 'Creado','Cancelado','Avanzado - Propuesta','Proyecto nuevo','Avanzado - Proyecto','Finalizado'
+      // Propuesta: Dar de baja la propuesta y Avanzar de Etapa
+      // Proyecto: Dar de baja el proyecto, Notificar avance y Finalizar Proyecto
+      this.optionsNodes = []
+      this.$refs.changeState.show()
+      loader.hide()
+    },
+    hideChangeState () {
+      this.optionsNodes = []
+      this.$refs.changeState.hide()
+    },
     getLinkPag (page) {
       return '#/porposes_projects?page=' + page
     },
@@ -184,7 +197,7 @@ export default {
         params.page = page
       }
       // Muestro de a 10 registros...
-      params.bypage = 5
+      params.bypage = 10
 
       porpose.getFilter(params)
         .then((result) => {
@@ -202,7 +215,6 @@ export default {
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((error) => {
-          console.log(error)
           loader.hide()
           this.getErrorMessage(error)
         })

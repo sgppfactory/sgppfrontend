@@ -41,8 +41,7 @@
               <b-form-input id="date_birth"
                             type="date"
                             v-model.trim="form.datenac"
-                            placeholder="Seleccionar fecha de nacimiento"
-                            >
+                            placeholder="Seleccionar fecha de nacimiento">
               </b-form-input>
             </b-form-group>
             <b-form-group label="Teléfono:" label-for="tel">

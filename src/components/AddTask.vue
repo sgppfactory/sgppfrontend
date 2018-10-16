@@ -7,22 +7,32 @@
       <b-form @submit="submit" @reset="onReset">
         <b-row>
           <b-col>
-            <b-form-group label="Fecha:" label-for="name">
-              <b-form-input id="name"
+            <b-form-group label="Título:" label-for="title">
+              <b-form-input id="title"
                             type="text"
-                            v-model.trim="form.name"
+                            v-model.trim="form.title"
                             required
-                            placeholder="Ingrese el nombre"
+                            placeholder="Ingrese un Título"
                             v-b-tooltip.click.blur.rightbottom 
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Duración:" label-for="name">
-              <b-form-input id="name"
-                            type="text"
-                            v-model.trim="form.name"
+            <b-form-group label="Fecha y Hora:" label-for="date_hour">
+              <b-form-input id="date_hour"
+                            type="date"
+                            v-model.trim="form.date_hour"
                             required
-                            placeholder="Ingrese el nombre"
+                            placeholder="Ingrese fecha y hora del comienzo de la tarea"
+                            v-b-tooltip.click.blur.rightbottom 
+                            title="Campo requerido">
+              </b-form-input>
+            </b-form-group>
+            <b-form-group label="Duración:" label-for="duration">
+              <b-form-input id="duration"
+                            type="text"
+                            v-model.trim="form.duration"
+                            required
+                            placeholder="Estime la duración del evento"
                             v-b-tooltip.click.blur.rightbottom 
                             title="Campo requerido">
               </b-form-input>
@@ -37,24 +47,28 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Propuesta / Proyecto:" label-for="notes">
-              <b-form-input id="notes"
-                            type="text"
-                            v-model.trim="form.notes"
-                            required
-                            placeholder="Ingrese el nombre"
-                            v-b-tooltip.click.blur.rightbottom 
-                            title="Campo requerido">
-              </b-form-input>
+            <b-form-group label="Persona/s relacionada/s:" label-for="persons">
+              <vue-bootstrap-typeahead :data="personsSearched"
+                                        v-model="searchPerson"
+                                        placeholder="Ingrese nombre y apellido de una persona"
+                                        :serializer="s => s.lastname + ', ' + s.name"
+                                        @hit="selectPerson"
+                                        @input="searchPersons" />
+              <div id="personsSelectedId" >
+                <b-badge v-for="value in personsSelected" :id="value.id" pill variant="primary">
+                {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" 
+                                                      v-b-tooltip.hover 
+                                                      title="No asociar a la persona">
+                                                    <icon name="close" height="10"/>
+                                                    </a>
+                </b-badge>
+              </div>
             </b-form-group>
-            <b-form-group label="Personas relacionadas:" label-for="id_user">
-              <b-form-input id="id_user"
+            <b-form-group label="Estructura/Nodo:" label-for="node">
+              <b-form-input id="node"
                             type="text"
-                            v-model.trim="form.notes"
-                            required
-                            placeholder="Ingrese el nombre"
-                            v-b-tooltip.click.blur.rightbottom 
-                            title="Campo requerido">
+                            v-model.trim="form.id_node"
+                            placeholder="Seleccione un nodo o estructura">
               </b-form-input>
             </b-form-group>
           </b-col>
@@ -63,7 +77,7 @@
           </b-col>
         </b-row>
         <b-button type="submit" variant="primary">Crear</b-button>
-        <b-button type="reset" variant="danger">Limpiar</b-button>
+        <b-button type="reset" variant="danger">Cancelar</b-button>
       </b-form>
     </b-container>
     <notifications group="success" />
@@ -73,14 +87,18 @@
 
 <script>
 import 'vue-awesome/icons'
-import tasks from '../apiClients/tasks'
+import tasks from '@/apiClients/tasks'
 import Menu from '@/components/Menu'
+import node from '@/apiClients/node'
 import _ from 'underscore'
+import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
+import persons from '@/apiClients/persons'
 
 export default {
   name: 'AddTask',
   components: {
-    'app-menu': Menu
+    'app-menu': Menu,
+    'vue-bootstrap-typeahead': VueBootstrapTypeahead
   },
   data () {
     return {
@@ -99,13 +117,16 @@ export default {
         active: true
       }],
       form: {
+        title: '',
         notes: '',
         date_hour: '',
         duration: '',
-        id_porpose_project: '',
-        id_user: ''
+        id_node: ''
       },
-      optionsRols: []
+      optionsRols: [],
+      personsSearched: [],
+      personsSelected: [],
+      searchPerson: ''
     }
   },
   computed: {
@@ -119,25 +140,71 @@ export default {
     }
   },
   created () {
-    tasks.get()
-      .then((rolData) => {
-        rolData = rolData.data.message
-        if (rolData) {
-          this.optionsRols = _.map(rolData, (item) => {
+    var loader = this.$loading.show()
+
+    node.getChildrens()
+      .then((results) => {
+        if (results) {
+          this.optionsNodes = _.map(results.data.message, (item) => {
             return {
               value: item.id,
-              text: item.name
+              text: item.name + (item.description !== '' ? ' - ' + item.description.substr(0, 25) : '')
             }
           })
         }
-      }).catch(() => {
-        this.logout()
+        if (this.$route.query.taskId) {
+          tasks
+            .getById(this.$route.query.taskId)
+            .then((result) => {
+              loader.hide()
+              let task = result.data.message
+              this.form = {
+                title: task.title,
+                notes: task.notes,
+                date_hour: task.date_hour,
+                duration: task.duration,
+                id_node: task.id_node
+              }
+
+              // this.personsSelected
+            }).catch((err) => {
+              loader.hide()
+              this.getErrorMessage(err)
+            })
+        } else {
+          loader.hide()
+        }
+      }).catch((err) => {
+        loader.hide()
+        this.getErrorMessage(err)
       })
   },
   methods: {
     logout () {
       localStorage.jwt = ''
       this.$router.push('login')
+    },
+    searchPersons () {
+      var params = this.searchPerson ? {
+        filter: [
+          {key: 'name', value: this.searchPerson, operator: 'like', operator_sup: 'OR'},
+          {key: 'lastname', value: this.searchPerson, operator: 'like', operator_sup: 'OR'},
+          {key: 'email', value: this.searchPerson, operator: 'like', operator_sup: 'OR'}
+        ]
+      } : {}
+
+      params.bypage = 5
+
+      persons.getFilter(params)
+        .then((result) => {
+          this.personsSearched = (result.status === 200)
+            ? result.data.result
+            : []
+        })
+    },
+    selectPerson (value) {
+      this.personsSelected.push(value)
+      this.searchPerson = ''
     },
     submit (id) {
       let params = {}
@@ -180,14 +247,15 @@ export default {
     },
     onReset () {
       this.form = {
-        name: '',
-        lastname: '',
-        email: '',
-        tel: '',
-        cel: '',
-        location: '',
-        withuser: false,
-        rol: ''
+        title: '',
+        notes: '',
+        date_hour: '',
+        duration: '',
+        id_node: ''
+      }
+
+      if (this.$route.query.taskId) {
+        this.$route.push('/tasks')
       }
     },
     setError (input) {
@@ -213,5 +281,8 @@ li {
 }
 a {
   color: #42b983;
+}
+#personsSelectedId {
+  margin-top: 10px;
 }
 </style>
