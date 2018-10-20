@@ -101,6 +101,13 @@
                         v-model.trim="newnode.name"
                         required
                         placeholder="Nombre del nodo" />
+              <b-form-input id="nodedescription"
+                        type="text"
+                        size="sm" 
+                        class="mb-2 mr-sm-2 mb-sm-0"
+                        v-model.trim="newnode.description"
+                        required
+                        placeholder="Descripción del nodo" />
               <b-form-checkbox size="sm" class="mb-2 mr-sm-2 mb-sm-0" v-model="newnode.cicle" value="true">
                 Tipo Ciclo
               </b-form-checkbox>
@@ -124,7 +131,7 @@
         :index="index"
         :key="step.id"
         :model="step"></item-stage>
-        <!-- ALTA ETAPA -->
+        <!-- ALTA ETAPA - FORMULARIO -->
       <li class="item add">
         <b-row>
           <b-col cols="1">
@@ -144,6 +151,16 @@
                         required
                         class="mb-2 mr-sm-2 mb-sm-0"
                         placeholder="Ingrese el nombre"
+                        v-b-tooltip.click.blur.rightbottom 
+                        title="Nombre Etapa">
+              </b-input>
+              <b-input id="order"
+                        type="text"
+                        size="sm"
+                        v-model.trim="newStep.order"
+                        required
+                        class="mb-2 mr-sm-2 mb-sm-0"
+                        placeholder="Ingrese un orden"
                         v-b-tooltip.click.blur.rightbottom 
                         title="Nombre Etapa">
               </b-input>
@@ -204,12 +221,14 @@ export default {
       newnode: {
         name: '',
         cicle: false,
-        amount: ''
+        amount: '',
+        description: ''
       },
       newStep: {
         name: '',
         isproject: false,
-        dateInit: ''
+        dateInit: '',
+        order: ''
       },
       updateNodeData: {
         name: '',
@@ -264,7 +283,6 @@ export default {
           loader.hide()
           if (result.status === 201) {
             this.model.childrens.push(newnode)
-
             this.showSuccessMsg(result)
           } else {
             this.getErrorMessage('Error al procesar el pedido, intente nuevamente')

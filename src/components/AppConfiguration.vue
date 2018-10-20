@@ -101,6 +101,7 @@ export default {
       })
     },
     remove: function (id) {
+      var loader = this.$loading.show()
       app.remove(id)
         .then((result) => {
           // console.log(result)
@@ -109,7 +110,11 @@ export default {
             this.search()
             this.show = false
           }
-        }).catch(this.getErrorMessage)
+          loader.hide()
+        }).catch((error) => {
+          loader.hide()
+          this.getErrorMessage()
+        })
     }
   }
 }

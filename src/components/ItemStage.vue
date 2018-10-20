@@ -1,6 +1,6 @@
 <template>
   <li class="item" v-show="totalRemove">
-    <icon name="asterisk" height="10" v-b-tooltip.hover title="Etapas"/> {{model.order}} {{model.name}}
+    <icon name="asterisk" height="10" v-b-tooltip.hover title="Etapas"/> {{model.order}}) {{model.name}}
     <span> | 
       <a @click="showDeleteModalStage=true" v-b-tooltip.hover title="Eliminar etapa">
         <icon name="remove" height="13" />

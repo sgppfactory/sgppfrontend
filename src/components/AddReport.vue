@@ -33,9 +33,10 @@
 
 <script>
 import 'vue-awesome/icons'
-import reports from '../apiClients/reports'
+import reports from '@/apiClients/reports'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
+import {formatResponse} from '@/utils/tools.js'
 
 export default {
   name: 'AddReport',
@@ -76,19 +77,23 @@ export default {
     }
   },
   created () {
+    var loader = this.$loading.show()
+
     reports.get()
-      .then((rolData) => {
-        rolData = rolData.data.message
-        if (rolData) {
-          this.optionsRols = _.map(rolData, (item) => {
-            return {
-              value: item.id,
-              text: item.name
-            }
-          })
+      .then((reports) => {
+        if (reports) {
+          // reports = reports.data.message
+          // this.optionsRols = _.map(rolData, (item) => {
+          //   return {
+          //     value: item.id,
+          //     text: item.name
+          //   }
+          // })
         }
-      }).catch(() => {
-        this.logout()
+        loader.hide()
+      }).catch((err) => {
+        loader.hide()
+        this.getErrorMessage(err)
       })
   },
   methods: {
@@ -149,6 +154,21 @@ export default {
     },
     setError (input) {
 
+    },
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
     }
   }
 }

@@ -152,6 +152,7 @@
             <b-button type="submit" variant="primary">Agregar</b-button>
           </b-form>
           <b-table striped hover show-empty 
+            v-sortable="sortableOptions"
             :items="stages" 
             :fields="fieldsStage" 
             :sort-by.sync="sortBy"
@@ -225,7 +226,7 @@
           </b-row>
           <b-button @click="submit" variant="primary">Confirmar</b-button>
           <b-button @click="previousConfirm" type="button" variant="danger">Atrás</b-button>
-          <b-button type="reset" variant="danger">Cancelar</b-button>
+          <b-button @click="onResetAll" type="reset" variant="danger">Cancelar</b-button>
         </div>
       </div>
       <!-- </b-form> -->
@@ -243,6 +244,7 @@ import _ from 'underscore'
 import {formatMoney} from '../utils/tools'
 import datePicker from 'vue-bootstrap-datetimepicker'
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css'
+import Sortable from 'sortablejs'
 
 var headerStage = [
   {label: 'Orden', key: 'order', sortable: true},
@@ -253,7 +255,52 @@ var headerStage = [
 
 var optionsStage = {label: 'Opciones', key: 'actions', 'class': 'text-center'}
 
+const createSortable = (el, options, vnode) => {
+  return Sortable.create(el, {
+    ...options,
+    onEnd: (evt) => {
+      const data = vnode.context.data
+      const item = data[evt.oldIndex]
+      if (evt.newIndex > evt.oldIndex) {
+        for (let i = evt.oldIndex; i < evt.newIndex; i++) {
+          data[i] = data[i + 1]
+        }
+      } else {
+        for (let i = evt.oldIndex; i > evt.newIndex; i--) {
+          data[i] = data[i - 1]
+        }
+      }
+      data[evt.newIndex] = item
+      vnode.context.$toast.open(`Moved ${item.first_name} from row ${evt.oldIndex + 1} to ${evt.newIndex + 1}`)
+    }
+  })
+}
+
+const sortable = {
+  name: 'sortable',
+  bind(el, binding, vnode) {
+    const table = el.querySelector('table')
+    if (table) {
+      table._sortable = createSortable(table.querySelector('tbody'), binding.value, vnode)
+    }
+  },
+  update(el, binding, vnode) {
+    const table = el.querySelector('table')
+    if (table) {
+      table._sortable.destroy()
+      table._sortable = createSortable(table.querySelector('tbody'), binding.value, vnode)
+    }
+  },
+  unbind(el) {
+    const table = el.querySelector('table')
+    if (table) {
+      table._sortable.destroy()
+    }
+  }
+}
+
 export default {
+  directives: { sortable },
   name: 'AddStructure',
   components: {
     'app-menu': Menu,
@@ -264,6 +311,9 @@ export default {
       title: 'Alta de estructura',
       showTooltip: false,
       errorMessage: '',
+      sortableOptions: {
+        chosenClass: 'is-selected'
+      },
       bread: [{
         text: 'Inicio',
         href: '#/home'
@@ -538,7 +588,6 @@ export default {
           }
           loader.hide()
         }).catch((error) => {
-          console.log(error)
           loader.hide()
 
           this.$notify({
@@ -609,9 +658,9 @@ export default {
 
       this.stages = []
     },
-    setError (input) {
+    // setError (input) {
 
-    },
+    // },
     isFolder: (childrens) => {
       return childrens && childrens.length
     },
@@ -622,7 +671,6 @@ export default {
       }
     },
     toggle (ev) {
-      // console.log(ev, $(ev.toElement).data())
       if (this.isFolder) {
         $(ev.toElement).parents('div.structure').children('ul').toggle()
       }
@@ -635,6 +683,9 @@ export default {
     getAmount (amount) {
       // console.log(amount, Number(amount))
       return amount && amount !== '' ? formatMoney(amount) : '-'
+    },
+    onResetAll () {
+      this.$router.push('config_system')
     }
   }
 }
@@ -720,5 +771,8 @@ li.item {
 }
 div.itemApp {
   padding: 5px;
+}
+.is-selected {
+  background-color: 
 }
 </style>
