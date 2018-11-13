@@ -60,11 +60,16 @@
           </b-col>
           <b-col>
             <b-form-group label="Ubicación o domicilio:" label-for="location">
-              <b-form-input id="location"
-                            type="text"
-                            v-model.trim="form.location"
-                            placeholder="Ingresar un domicilio o ubicación">
-              </b-form-input>
+              <gmap-autocomplete  id="location"
+                                  class="form-control"
+                                  :value="form.location"
+                                  placeholder="Ingresar un domicilio o ubicación"
+                                  @place_changed="setPlace">
+                                  <!-- :options="{
+                                    bounds: {lat:-34.097695, lng:-59.030265},
+                                    strictBounds: true
+                                  }" -->
+              </gmap-autocomplete>
             </b-form-group>
 
             <gmap-map
@@ -180,6 +185,9 @@ export default {
     },
     resetForm () {
       this.$router.push('/home')
+    },
+    setPlace (place) {
+      console.log(place)
     }
   }
 }

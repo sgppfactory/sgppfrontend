@@ -87,41 +87,43 @@
       <!-- AGREGAR NODO - FORMULARIO -->
       <li class="item add">
         <b-row>
-          <b-col cols="1">
+          <b-col cols="2">
             <b-button type="primary" size="sm" variant="outline-success" @click="toggleAddChild">
               <icon name="minus" v-show="openAddChild" height="10"/><icon name="plus" v-show="!openAddChild" height="10"/> <span v-show="!openAddChild">Añadir Nodo</span><span v-show="openAddChild"> >> </span>
             </b-button>
           </b-col>
-          <b-col cols="11">
-            <b-form inline v-show="openAddChild">
-              <b-form-input id="nodename"
-                        type="text"
-                        size="sm" 
-                        class="mb-2 mr-sm-2 mb-sm-0"
-                        v-model.trim="newnode.name"
-                        required
-                        placeholder="Nombre del nodo" />
-              <b-form-input id="nodedescription"
-                        type="text"
-                        size="sm" 
-                        class="mb-2 mr-sm-2 mb-sm-0"
-                        v-model.trim="newnode.description"
-                        required
-                        placeholder="Descripción del nodo" />
-              <b-form-checkbox size="sm" class="mb-2 mr-sm-2 mb-sm-0" v-model="newnode.cicle" value="true">
-                Tipo Ciclo
-              </b-form-checkbox>
-              <b-form-input id="amountnode"
-                        type="text"
-                        size="sm" 
-                        class="mb-2 mr-sm-2 mb-sm-0"
-                        v-model.trim="newnode.amount"
-                        v-show="newnode.cicle"
-                        placeholder="Monto" />
-              <b-button type="primary" size="sm" variant="primary" @click="addChild">
-                <icon name="plus" height="10"/> Añadir Nodo
-              </b-button>
-            </b-form>
+          <b-col cols="10">
+            <transition name="fade">
+              <b-form inline v-show="openAddChild">
+                <b-form-input id="nodename"
+                          type="text"
+                          size="sm" 
+                          class="mb-2 mr-sm-2 mb-sm-0"
+                          v-model.trim="newnode.name"
+                          required
+                          placeholder="Nombre del nodo" />
+                <b-form-input id="nodedescription"
+                          type="text"
+                          size="sm" 
+                          class="mb-2 mr-sm-2 mb-sm-0"
+                          v-model.trim="newnode.description"
+                          required
+                          placeholder="Descripción del nodo" />
+                <b-form-checkbox size="sm" class="mb-2 mr-sm-2 mb-sm-0" v-model="newnode.cicle" value="true">
+                  Tipo Ciclo
+                </b-form-checkbox>
+                <b-form-input id="amountnode"
+                          type="text"
+                          size="sm" 
+                          class="mb-2 mr-sm-2 mb-sm-0"
+                          v-model.trim="newnode.amount"
+                          v-show="newnode.cicle"
+                          placeholder="Monto" />
+                <b-button type="primary" size="sm" variant="primary" @click="addChild">
+                  <icon name="plus" height="10"/> Añadir Nodo
+                </b-button>
+              </b-form>
+            </transition>
           </b-col>
         </b-row>
       </li>
@@ -134,7 +136,7 @@
         <!-- ALTA ETAPA - FORMULARIO -->
       <li class="item add">
         <b-row>
-          <b-col cols="1">
+          <b-col cols="2">
             <b-button type="primary" 
                       size="sm" 
                       variant="outline-success" 
@@ -142,46 +144,48 @@
               <icon name="minus" v-show="openAddStage" height="10"/><icon name="plus" v-show="!openAddStage" height="10"/> <span v-show="!openAddStage">Añadir Etapa</span><span v-show="openAddStage"> >> </span>
             </b-button>
           </b-col>
-          <b-col cols="11">
-            <b-form inline v-show="openAddStage">
-              <b-input id="stepname"
-                        type="text"
-                        size="sm"
-                        v-model.trim="newStep.name"
-                        required
-                        class="mb-2 mr-sm-2 mb-sm-0"
-                        placeholder="Ingrese el nombre"
-                        v-b-tooltip.click.blur.rightbottom 
-                        title="Nombre Etapa">
-              </b-input>
-              <b-input id="order"
-                        type="text"
-                        size="sm"
-                        v-model.trim="newStep.order"
-                        required
-                        class="mb-2 mr-sm-2 mb-sm-0"
-                        placeholder="Ingrese un orden"
-                        v-b-tooltip.click.blur.rightbottom 
-                        title="Nombre Etapa">
-              </b-input>
-              <date-picker v-model="newStep.dateInit"
-                        required
-                        placeholder="Ingresar fecha de comienzo"
-                        title="Campo requerido"
-                        v-b-tooltip.click.blur.rightbottom 
-                        :config="{format: 'DD/MM',useCurrent: false, locale: 'es'}"
-                        class="mb-2 mr-sm-2 mb-sm-0 form-control form-control-sm">
-              </date-picker>
-              <b-form-checkbox size="sm" 
-                              class="mb-2 mr-sm-2 mb-sm-0" 
-                              v-model="newStep.isproject" 
-                              value="true">
-                Tipo proyecto
-              </b-form-checkbox>
-              <b-button type="primary" size="sm" variant="primary" @click="addStep">
-                <icon name="plus" height="10"/> Añadir Etapa
-              </b-button>
-            </b-form>
+          <b-col cols="10">
+            <transition name="fade">
+              <b-form inline v-show="openAddStage">
+                <b-input id="stepname"
+                          type="text"
+                          size="sm"
+                          v-model.trim="newStep.name"
+                          required
+                          class="mb-2 mr-sm-2 mb-sm-0"
+                          placeholder="Ingrese el nombre"
+                          v-b-tooltip.click.blur.rightbottom 
+                          title="Nombre Etapa">
+                </b-input>
+                <b-input id="order"
+                          type="text"
+                          size="sm"
+                          v-model.trim="newStep.order"
+                          required
+                          class="mb-2 mr-sm-2 mb-sm-0"
+                          placeholder="Ingrese un orden"
+                          v-b-tooltip.click.blur.rightbottom 
+                          title="Nombre Etapa">
+                </b-input>
+                <date-picker v-model="newStep.dateInit"
+                          required
+                          placeholder="Ingresar fecha de comienzo"
+                          title="Campo requerido"
+                          v-b-tooltip.click.blur.rightbottom 
+                          :config="{format: 'DD/MM',useCurrent: false, locale: 'es'}"
+                          class="mb-2 mr-sm-2 mb-sm-0 form-control form-control-sm">
+                </date-picker>
+                <b-form-checkbox size="sm" 
+                                class="mb-2 mr-sm-2 mb-sm-0" 
+                                v-model="newStep.isproject" 
+                                value="true">
+                  Tipo proyecto
+                </b-form-checkbox>
+                <b-button type="primary" size="sm" variant="primary" @click="addStep">
+                  <icon name="plus" height="10"/> Añadir Etapa
+                </b-button>
+              </b-form>
+            </transition>
           </b-col>
         </b-row>
       </li>
@@ -319,8 +323,12 @@ export default {
               name: params.name,
               dateInit: params.dateInit,
               isProject: params.isproject,
-              id: result.data.id
-            })
+              id: result.data.id,
+              order: result.data.order
+            });
+            // TODO: Podemos reordenar volviendo a recargar las etapas
+            this.steps = _.sortBy(this.steps, 'order')
+
             this.showSuccessMsg(result)
           } else {
             this.getErrorMessage('Error al procesar el pedido, intente nuevamente')
@@ -441,8 +449,8 @@ a {
   color: #42b983;
   cursor: pointer;
 }
-.addForm {
-  margin: 5px;
+.add form {
+  margin-top: 3px;
   /*width: 400px;*/
 }
 .addStage {
@@ -451,5 +459,11 @@ a {
 }
 .item {
   line-height: 35px;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>

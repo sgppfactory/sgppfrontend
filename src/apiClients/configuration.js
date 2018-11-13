@@ -6,5 +6,8 @@ export default {
   },
   create: (params) => {
     return basicClient('/implementation', 'POST', params)
+  },
+  checkTitle: (params) => {
+    return params ? basicClient('/structure', 'GET', params) : false
   }
 }

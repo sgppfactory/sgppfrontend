@@ -21,7 +21,6 @@
             <b-form-group label="Estructura/Nodo:" label-for="idNode">
               <b-form-select id="idnode"
                             v-model="form.idNode"
-                            placeholder="Seleccionar un nodo o estructura"
                             :options="optionsNodes">
               </b-form-select>
             </b-form-group>
@@ -30,7 +29,7 @@
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="personsSearched"
                                         v-model="searchPerson"
-                                        :serializer="s => s.lastname + ', ' + s.name"
+                                        :serializer="s => s.lastname + ', ' + s.name + ' - ' + s.email"
                                         placeholder="Ingrese nombre y apellido de una persona"
                                         @hit="selectPerson"
                                         @input="searchPersons" />
@@ -50,7 +49,7 @@
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="tagsSearched"
                                         v-model.trim="searchTags"
-                                        :serializer="s => s.lastname + ', ' + s.name"
+                                        :serializer="s => s.name"
                                         placeholder="Ingrese una etiqueta"
                                         @hit="selectTag"
                                         @input="searchTag" />
@@ -97,10 +96,11 @@
             </b-form-group>
 
             <gmap-map
-              :center="{lat:-34.097695, lng:-59.030265}"
-              :zoom="14"
-              map-type-id="terrain"
-              style="width: 100%; height: 300px"
+                  :center="{lat:-34.097695, lng:-59.030265}"
+                  :zoom="14"
+                  map-type-id="terrain"
+                  style="width: 100%; height: 300px"
+                  ref="mapRef"
             ></gmap-map>
           </b-col>
         </b-row>
@@ -159,7 +159,8 @@ export default {
       searchPerson: '',
       tagsSelected: [],
       searchTags: '',
-      tagsSearched: []
+      tagsSearched: [],
+      locationSelected: {}
     }
   },
   computed: {
@@ -175,12 +176,13 @@ export default {
     node.getChildrens()
       .then((results) => {
         if (results) {
-          this.optionsNodes = _.map(results.data.message, (item) => {
+          this.optionsNodes.push({value: "", text: "Seleccione un Nodo o Estructura"})
+          this.optionsNodes = this.optionsNodes.concat(_.map(results.data.message, (item) => {
             return {
               value: item.id,
               text: item.name + (item.description !== '' ? ' - ' + item.description.substr(0, 25) : '')
             }
-          })
+          }))
         }
         loader.hide()
       }).catch((err) => {
@@ -204,6 +206,12 @@ export default {
       params.persons = _.map(this.personsSelected, (pers) => {
         return pers.id
       })
+      if (this.tagsSelected.length > 0) {
+        params.tags = this.tagsSelected
+      }
+      if (!_.isEmpty(this.locationSelected)) {
+        params.location = this.locationSelected
+      }
       porpose.post(params)
         .then((result) => {
           if (result.status === 201) {
@@ -229,9 +237,11 @@ export default {
         location: '',
         amount: ''
       }
+
+      this.personsSelected = []
+      this.tagsSelected = []
+      this.locationSelected = {}
     },
-    // setErrorInput (input) {
-    // },
     deletePerson (id) {
       this.personsSelected = _.reject(
         this.personsSelected,
@@ -277,14 +287,33 @@ export default {
         }
       })
     },
-    selectLocation () {
-
-    },
     setPlace (place) {
-      console.log(place)
+      if (place) {
+        var lat = place.geometry.location.lat()
+        var lng = place.geometry.location.lng()
+
+        this.locationSelected = {
+          lat: lat,
+          lng: lng,
+          address: place.formatted_address
+        }
+
+        if (lat && lng) {
+          this.$refs.mapRef.$mapCreated.then((map) => {
+            const position = new google.maps.LatLng(lat, lng);
+            const marker = new google.maps.Marker({ 
+              position,
+              map
+            });
+            map.panTo({lat: lat, lng: lng})
+          })
+        }
+      }
     },
     selectTag (value) {
+      console.log(value)
       if (value) {
+        // {id,name}
         this.tagsSelected.push(value)
         this.searchTags = ''
       }

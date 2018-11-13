@@ -238,10 +238,10 @@
 
 <script>
 // import 'vue-awesome/icons'
-import configuration from '../apiClients/configuration'
+import configuration from '@/apiClients/configuration'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
-import {formatMoney} from '../utils/tools'
+import {formatMoney, formatResponse} from '@/utils/tools'
 import datePicker from 'vue-bootstrap-datetimepicker'
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css'
 import Sortable from 'sortablejs'
@@ -430,11 +430,45 @@ export default {
       this.$router.push('login')
     },
     nextApp (ev) {
-      this.step.app = false
-      this.step.nodes = true
-      if (this.nodes.length > 0) {
-        this.nodesNew = this.getNodesByLevel(0)
+      if (!this.formApp.name) {
+        this.$notify({
+          group: 'error',
+          title: 'Ops!',
+          text: "Ingrese un nombre de estructura.",
+          type: 'error',
+          position: 'bottom right'
+        })
+        return
       }
+
+      var loader = this.$loading.show()
+
+      var params = {filter: [
+        {key: 'name', value: this.formApp.name, operator: '=', operator_sup: 'AND'}
+      ]}
+
+      configuration.checkTitle(params)
+        .then((result) => {
+          if (_.isEmpty(result.data.message)) {
+            this.step.app = false
+            this.step.nodes = true
+            if (this.nodes.length > 0) {
+              this.nodesNew = this.getNodesByLevel(0)
+            }
+          } else {
+            this.$notify({
+              group: 'error',
+              title: 'Ops!',
+              text: "Nombre de estructura existente.",
+              type: 'error',
+              position: 'bottom right'
+            })
+          }
+          loader.hide()
+        }).catch(err => {
+          loader.hide()
+          this.getErrorMessage(err)
+        })
     },
     nextNode (ev) {
       if (this.nodesNew.length === 0) {
@@ -686,6 +720,21 @@ export default {
     },
     onResetAll () {
       this.$router.push('config_system')
+    },
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
     }
   }
 }

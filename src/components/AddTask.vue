@@ -77,7 +77,7 @@
           </b-col>
         </b-row>
         <b-button type="submit" variant="primary">Crear</b-button>
-        <b-button type="reset" variant="danger">Cancelar</b-button>
+        <b-button type="reset" variant="danger">Limpiar</b-button>
       </b-form>
     </b-container>
     <notifications group="success" />

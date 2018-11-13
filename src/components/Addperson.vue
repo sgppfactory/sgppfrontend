@@ -61,17 +61,23 @@
           </b-col>
           <b-col>
             <b-form-group label="Ubicación o domicilio:" label-for="location">
-              <b-form-input id="location"
-                            type="text"
-                            v-model.trim="form.location"
-                            placeholder="Ingresar un domicilio">
-              </b-form-input>
+              <gmap-autocomplete  id="location"
+                                  class="form-control"
+                                  :value="form.location"
+                                  placeholder="Ingresar una ubicación"
+                                  @place_changed="setPlace">
+                                  <!-- :options="{
+                                    bounds: {lat:-34.097695, lng:-59.030265},
+                                    strictBounds: true
+                                  }" -->
+              </gmap-autocomplete>
             </b-form-group>
 
             <gmap-map
               :center="{lat:-34.097695, lng:-59.030265}"
               :zoom="14"
               map-type-id="terrain"
+              ref="mapRef"
               style="width: 100%; height: 300px"
             ></gmap-map>
 
@@ -144,7 +150,8 @@ export default {
         rol: '',
         datenac: ''
       },
-      optionsRols: []
+      optionsRols: [],
+      locationSelected: {}
     }
   },
   computed: {
@@ -204,23 +211,26 @@ export default {
       this.$router.push('login')
     },
     submit (evt) {
-      var loader = this.$loading.show()
       evt.preventDefault()
-      let params = {}
+      var loader = this.$loading.show()
+      let params = _.clone(this.form)
       if (this.$route.params.personId) {
         params.id = this.$route.params.personId
       }
 
-      persons.post(_.extend(this.form, params))
+      if (!_.isEmpty(this.locationSelected)) {
+        params.location = this.locationSelected
+      }
+
+      persons.post(params)
         .then((result) => {
-          console.log(result)
+          // console.log(result)
           if (result.status === 201) {
             this.$notify({
               group: 'success',
               title: 'Ok!',
               text: result.data.message,
               type: 'success'
-              // position: 'bottom right'
             })
             this.onReset()
           }
@@ -240,6 +250,29 @@ export default {
         location: '',
         withuser: false,
         rol: ''
+      }
+    },
+    setPlace (place) {
+      if (place) {
+        var lat = place.geometry.location.lat()
+        var lng = place.geometry.location.lng()
+
+        this.locationSelected = {
+          lat: lat,
+          lng: lng,
+          address: place.formatted_address
+        }
+
+        if (lat && lng) {
+          this.$refs.mapRef.$mapCreated.then((map) => {
+            const position = new google.maps.LatLng(lat, lng);
+            const marker = new google.maps.Marker({ 
+              position,
+              map
+            });
+            map.panTo({lat: lat, lng: lng})
+          })
+        }
       }
     },
     getErrorMessage (result) {
