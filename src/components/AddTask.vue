@@ -55,7 +55,7 @@
                                         @hit="selectPerson"
                                         @input="searchPersons" />
               <div id="personsSelectedId" >
-                <b-badge v-for="value in personsSelected" :id="value.id" pill variant="primary">
+                <b-badge v-for="value in personsSelected" :id="value.id" :key="value.id" pill variant="primary">
                 {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" 
                                                       v-b-tooltip.hover 
                                                       title="No asociar a la persona">

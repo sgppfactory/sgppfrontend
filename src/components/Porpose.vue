@@ -24,7 +24,7 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <router-link :to="{ name: 'addporpose', query: { porposeId: row.item.id }}" 
+          <router-link :to="{ name: 'AddPorpose', query: { porposeId: row.item.id }}" 
                         v-b-tooltip.hover 
                         title="Modificar Propuesta / Proyecto"> 
             <icon name="edit" />

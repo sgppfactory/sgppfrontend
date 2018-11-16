@@ -23,7 +23,7 @@ function changeFormatDate (latinDate) {
 function formatResponse (result, callback) {
   result = result.response
   let message = ''
-  if (result.status === 404 || result.status === 500) {
+  if (!result || result.status === 404 || result.status === 500) {
     message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
   } else if (result.status === 401) {
     message = 'logout'

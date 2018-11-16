@@ -5,16 +5,36 @@ export default {
     return basicClient('/porpose', 'GET', params)
   },
   post: function (params) {
-    return basicClient('/porpose', 'POST', params)
+    if (params) {
+      return basicClient('/porpose', 'POST', params)
+    }
+    return new Promise((resolve, reject) => {
+      reject('Faltan parámetros en la consulta')
+    })
   },
-  update: function (params) {
-    return basicClient('/porpose', 'PUT', params)
+  update: function (id, params) {
+    if (id && state) {
+      return basicClient('/porpose/' + id, 'PUT', params)
+    }
+    return new Promise((resolve, reject) => {
+      reject('Faltan parámetros en la consulta')
+    })
   },
   remove: function (id) {
-    return basicClient('/porpose/' + id, 'DELETE')
+    if (id) {
+      return basicClient('/porpose/' + id, 'DELETE')
+    }
+    return new Promise((resolve, reject) => {
+      reject('Faltan parámetros en la consulta')
+    })
   },
   getById: function (id) {
-    return basicClient('/porpose/' + id, 'GET')
+    if (id) {
+      return basicClient('/porpose/' + id, 'GET')
+    }
+    return new Promise((resolve, reject) => {
+      reject('Faltan parámetros en la consulta')
+    })
   },
   changeState: function (id, state) {
     if (id && state) {

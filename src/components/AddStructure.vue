@@ -271,27 +271,27 @@ const createSortable = (el, options, vnode) => {
         }
       }
       data[evt.newIndex] = item
-      vnode.context.$toast.open(`Moved ${item.first_name} from row ${evt.oldIndex + 1} to ${evt.newIndex + 1}`)
+      vnode.context.$toast.open('Moved ${item.first_name} from row ${evt.oldIndex + 1} to ${evt.newIndex + 1}')
     }
   })
 }
 
 const sortable = {
   name: 'sortable',
-  bind(el, binding, vnode) {
+  bind (el, binding, vnode) {
     const table = el.querySelector('table')
     if (table) {
       table._sortable = createSortable(table.querySelector('tbody'), binding.value, vnode)
     }
   },
-  update(el, binding, vnode) {
+  update (el, binding, vnode) {
     const table = el.querySelector('table')
     if (table) {
       table._sortable.destroy()
       table._sortable = createSortable(table.querySelector('tbody'), binding.value, vnode)
     }
   },
-  unbind(el) {
+  unbind (el) {
     const table = el.querySelector('table')
     if (table) {
       table._sortable.destroy()
@@ -434,7 +434,7 @@ export default {
         this.$notify({
           group: 'error',
           title: 'Ops!',
-          text: "Ingrese un nombre de estructura.",
+          text: 'Ingrese un nombre de estructura.',
           type: 'error',
           position: 'bottom right'
         })
@@ -459,7 +459,7 @@ export default {
             this.$notify({
               group: 'error',
               title: 'Ops!',
-              text: "Nombre de estructura existente.",
+              text: 'Nombre de estructura existente.',
               type: 'error',
               position: 'bottom right'
             })

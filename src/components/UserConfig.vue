@@ -60,23 +60,21 @@
           </b-col>
           <b-col>
             <b-form-group label="Ubicación o domicilio:" label-for="location">
-              <gmap-autocomplete  id="location"
-                                  class="form-control"
-                                  :value="form.location"
-                                  placeholder="Ingresar un domicilio o ubicación"
-                                  @place_changed="setPlace">
-                                  <!-- :options="{
-                                    bounds: {lat:-34.097695, lng:-59.030265},
-                                    strictBounds: true
-                                  }" -->
-              </gmap-autocomplete>
+              <gmaps-autocomplete   id="location"
+                                    ref="gmapAutocomplete"
+                                    v-model="form.location"
+                                    placeholder="Ingresar un domicilio o ubicación"
+                                    country="ar"
+                                    :geolocationOptions="{lat:-34.097695, lng:-59.030265}"
+                                    @placechanged="setPlace">
+              </gmaps-autocomplete>
             </b-form-group>
 
-            <gmap-map
-              :center="{lat:-34.097695, lng:-59.030265}"
-              :zoom="14"
-              map-type-id="terrain"
-              style="width: 100%; height: 300px"
+            <gmap-map ref="mapRef"
+                      :center="{lat:-34.097695, lng:-59.030265}"
+                      :zoom="14"
+                      map-type-id="terrain"
+                      style="width: 100%; height: 300px"
             ></gmap-map>
 
             <b-table striped hover :items="logins" :fields="fields">
@@ -91,24 +89,24 @@
     <notifications group="error" />
   </div>
 </template>
-<!--   <div align="center">
-    <img src="static/loading.gif" border="0">
-  </div> -->
 
 <script>
 import user from '@/apiClients/auth'
 import Menu from '@/components/Menu'
 import {formatResponse} from '@/utils/tools.js'
+import GmapsAutocomplete from '@/components/GmapsAutocomplete'
 
 export default {
   name: 'Login',
   components: {
-    'app-menu': Menu
+    'app-menu': Menu,
+    'gmaps-autocomplete': GmapsAutocomplete
   },
   data () {
     return {
       title: 'Configuración de usuario',
       errorMessage: '',
+      locationSelected: {},
       form: {
         password: '',
         rePassword: '',
@@ -187,8 +185,24 @@ export default {
       this.$router.push('/home')
     },
     setPlace (place) {
-      console.log(place)
-    }
+      if (place) {
+        var lat = place.lat
+        var lng = place.lng
+
+        this.locationSelected = place
+
+        if (lat && lng) {
+          this.$refs.mapRef.$mapCreated.then((map) => {
+            const position = new google.maps.LatLng(lat, lng)
+            const marker = new google.maps.Marker({ 
+              position,
+              map
+            })
+            map.panTo({lat: lat, lng: lng})
+          })
+        }
+      }
+    },
   }
 }
 </script>

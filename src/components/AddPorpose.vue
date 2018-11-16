@@ -35,7 +35,7 @@
                                         @input="searchPersons" />
               <!-- </b-input-group> -->
               <div id="personsSelectedId">
-                <b-badge v-for="value in personsSelected" :id="value.id" pill variant="primary">
+                <b-badge v-for="value in personsSelected" :id="value.id" :key="value.id" pill variant="primary">
                 {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" 
                                                       v-b-tooltip.hover 
                                                       title="No asociar a la persona">
@@ -49,13 +49,13 @@
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="tagsSearched"
                                         v-model.trim="searchTags"
-                                        :serializer="s => s.name"
+                                        :serializer="s => (s.pretext ? s.pretext : '') + s.name"
                                         placeholder="Ingrese una etiqueta"
                                         @hit="selectTag"
                                         @input="searchTag" />
               <!-- </b-input-group> -->
               <div id="tagsSelectedId">
-                <b-badge v-for="value in tagsSelected" :id="value.id" pill variant="dark">
+                <b-badge v-for="value in tagsSelected" :id="value.id" :key="value.id" pill variant="dark">
                 {{value.name}} <a @click="deleteTag(value.id)" 
                                     v-b-tooltip.hover 
                                     title="No asociar la etiqueta a la propuesta">
@@ -83,24 +83,21 @@
           </b-col>
           <b-col>
             <b-form-group label="Ubicación:" label-for="location">
-              <gmap-autocomplete  id="location"
-                                  class="form-control"
-                                  :value="form.location"
-                                  placeholder="Ingresar una ubicación"
-                                  @place_changed="setPlace">
-                                  <!-- :options="{
-                                    bounds: {lat:-34.097695, lng:-59.030265},
-                                    strictBounds: true
-                                  }" -->
-              </gmap-autocomplete>
+              <gmaps-autocomplete   id="location"
+                                    ref="gmapAutocomplete"
+                                    v-model="form.location"
+                                    placeholder="Ingresar una ubicación"
+                                    country="ar"
+                                    :geolocationOptions="{lat:-34.097695, lng:-59.030265}"
+                                    @placechanged="setPlace">
+              </gmaps-autocomplete>
             </b-form-group>
 
-            <gmap-map
-                  :center="{lat:-34.097695, lng:-59.030265}"
-                  :zoom="14"
-                  map-type-id="terrain"
-                  style="width: 100%; height: 300px"
-                  ref="mapRef"
+            <gmap-map ref="mapRef"
+                      :center="{lat:-34.097695, lng:-59.030265}"
+                      :zoom="14"
+                      map-type-id="terrain"
+                      style="width: 100%; height: 300px"
             ></gmap-map>
           </b-col>
         </b-row>
@@ -123,12 +120,14 @@ import Menu from '@/components/Menu'
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
 import _ from 'underscore'
 import {formatResponse} from '@/utils/tools.js'
+import GmapsAutocomplete from '@/components/GmapsAutocomplete'
 
 export default {
   name: 'AddPorpose',
   components: {
     'app-menu': Menu,
-    'vue-bootstrap-typeahead': VueBootstrapTypeahead
+    'vue-bootstrap-typeahead': VueBootstrapTypeahead,
+    'gmaps-autocomplete': GmapsAutocomplete
   },
   data () {
     return {
@@ -155,7 +154,6 @@ export default {
       optionsNodes: [],
       personsSelected: [],
       personsSearched: [],
-      locationSearched: [],
       searchPerson: '',
       tagsSelected: [],
       searchTags: '',
@@ -174,7 +172,7 @@ export default {
     var loader = this.$loading.show()
 
     node.getChildrens()
-      .then((results) => {
+      .then(results => {
         if (results) {
           this.optionsNodes.push({value: "", text: "Seleccione un Nodo o Estructura"})
           this.optionsNodes = this.optionsNodes.concat(_.map(results.data.message, (item) => {
@@ -184,7 +182,35 @@ export default {
             }
           }))
         }
-        loader.hide()
+
+        if (this.$route.query.porposeId) {
+          porpose
+            .getById(this.$route.query.porposeId)
+            .then((result) => {
+              loader.hide()
+              let porposeR = result.data.message
+              let location = JSON.parse(porposeR.location)
+
+              if (location) {
+                this.setPlace(location)
+              }
+
+              this.form = {
+                title: porposeR.title,
+                idNode: porposeR.idNode,
+                details: porposeR.details,
+                location: location ? location.address : '',
+                amount: porposeR.amount
+              }
+              this.personsSelected = result.persons
+              this.tagsSelected = result.labels
+            }).catch(err => {
+              loader.hide()
+              this.getErrorMessage(err)
+            })
+        } else {
+          loader.hide()
+        }
       }).catch((err) => {
         loader.hide()
         this.getErrorMessage(err)
@@ -199,8 +225,8 @@ export default {
       evt.preventDefault()
       var loader = this.$loading.show()
       let params = _.clone(this.form)
-      if (this.$router.params.porposeId) {
-        params.id = this.$router.params.porposeId
+      if (this.$router.query.porposeId) {
+        params.id = this.$router.query.porposeId
       }
       params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
       params.persons = _.map(this.personsSelected, (pers) => {
@@ -266,6 +292,9 @@ export default {
           this.personsSearched = (result.status === 200)
             ? result.data.result
             : []
+        }).catch(err => {
+          loader.hide()
+          this.getErrorMessage(err)
         })
     },
     selectPerson (value) {
@@ -289,33 +318,44 @@ export default {
     },
     setPlace (place) {
       if (place) {
-        var lat = place.geometry.location.lat()
-        var lng = place.geometry.location.lng()
+        var lat = place.lat
+        var lng = place.lng
 
-        this.locationSelected = {
-          lat: lat,
-          lng: lng,
-          address: place.formatted_address
-        }
+        this.locationSelected = place
 
         if (lat && lng) {
           this.$refs.mapRef.$mapCreated.then((map) => {
-            const position = new google.maps.LatLng(lat, lng);
+            const position = new google.maps.LatLng(lat, lng)
             const marker = new google.maps.Marker({ 
               position,
               map
-            });
+            })
             map.panTo({lat: lat, lng: lng})
           })
         }
       }
     },
     selectTag (value) {
-      console.log(value)
+      var loader = this.$loading.show()
+      // console.log(value)
       if (value) {
         // {id,name}
-        this.tagsSelected.push(value)
-        this.searchTags = ''
+        if (value.id > 0) {
+          this.tagsSelected.push(value)
+          this.searchTags = ''
+        } else {
+          // #343a40 - negro
+          // #0056b3 - azul
+          tags.create({name: value.name, colour: '#343a40'})
+            .then(result => {
+              this.tagsSelected.push(value)
+              this.searchTags = ''
+              loader.hide()
+            }).catch(err => {
+              loader.hide()
+              this.getErrorMessage(err)
+            })
+        }
       }
     },
     searchTag () {
@@ -329,9 +369,20 @@ export default {
 
       tags.search(params)
         .then((result) => {
-          this.tagsSearched = (result.status === 200)
+          this.tagsSearched = (result.status === 200) && !_.isEmpty(result.data.result)
             ? result.data.result
-            : [{name: 'Agregar etiqueta: ' + this.searchTags}]
+            : []
+
+          let isEqual = _.contains(_.map(this.tagsSearched, value => {
+            return value.name.toLowerCase()
+          }), this.searchTags.toLowerCase())
+
+          if (!isEqual) {
+            this.tagsSearched.push({pretext: 'Agregar etiqueta: ', name: this.searchTags, id: 0})
+          }
+        }).catch(err => {
+          loader.hide()
+          this.getErrorMessage(err)
         })
     }
   }
@@ -357,5 +408,8 @@ a {
 }
 #personsSelectedId {
   margin-top: 10px;
+}
+span.badge {
+  margin: 5px;
 }
 </style>

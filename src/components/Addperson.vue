@@ -61,24 +61,21 @@
           </b-col>
           <b-col>
             <b-form-group label="Ubicación o domicilio:" label-for="location">
-              <gmap-autocomplete  id="location"
-                                  class="form-control"
-                                  :value="form.location"
-                                  placeholder="Ingresar una ubicación"
-                                  @place_changed="setPlace">
-                                  <!-- :options="{
-                                    bounds: {lat:-34.097695, lng:-59.030265},
-                                    strictBounds: true
-                                  }" -->
-              </gmap-autocomplete>
+              <gmaps-autocomplete   id="location"
+                                    ref="gmapAutocomplete"
+                                    v-model="form.location"
+                                    placeholder="Ingresar una ubicación"
+                                    country="ar"
+                                    :geolocationOptions="{lat:-34.097695, lng:-59.030265}"
+                                    @placechanged="setPlace">
+              </gmaps-autocomplete>
             </b-form-group>
 
-            <gmap-map
-              :center="{lat:-34.097695, lng:-59.030265}"
-              :zoom="14"
-              map-type-id="terrain"
-              ref="mapRef"
-              style="width: 100%; height: 300px"
+            <gmap-map ref="mapRef"
+                      :center="{lat:-34.097695, lng:-59.030265}"
+                      :zoom="14"
+                      map-type-id="terrain"
+                      style="width: 100%; height: 300px"
             ></gmap-map>
 
           </b-col>
@@ -117,11 +114,13 @@ import rol from '../apiClients/rol'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
 import {formatResponse} from '../utils/tools.js'
+import GmapsAutocomplete from '@/components/GmapsAutocomplete'
 
 export default {
   name: 'Addperson',
   components: {
-    'app-menu': Menu
+    'app-menu': Menu,
+    'gmaps-autocomplete': GmapsAutocomplete
   },
   data () {
     return {
@@ -254,22 +253,18 @@ export default {
     },
     setPlace (place) {
       if (place) {
-        var lat = place.geometry.location.lat()
-        var lng = place.geometry.location.lng()
+        var lat = place.lat
+        var lng = place.lng
 
-        this.locationSelected = {
-          lat: lat,
-          lng: lng,
-          address: place.formatted_address
-        }
+        this.locationSelected = place
 
         if (lat && lng) {
           this.$refs.mapRef.$mapCreated.then((map) => {
-            const position = new google.maps.LatLng(lat, lng);
+            const position = new google.maps.LatLng(lat, lng)
             const marker = new google.maps.Marker({ 
               position,
               map
-            });
+            })
             map.panTo({lat: lat, lng: lng})
           })
         }
