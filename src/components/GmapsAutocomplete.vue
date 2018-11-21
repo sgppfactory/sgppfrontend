@@ -25,6 +25,10 @@ export default {
     geolocationOptions: {
       type: Object,
       default: null
+    },
+    defaultValue: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -32,6 +36,11 @@ export default {
       locationSelected: {},
       autocomplete: {},
       autocompleteText: ''
+    }
+  },
+  created () {
+    if (this.defaultValue) {
+      this.autocompleteText = this.defaultValue
     }
   },
   mounted () {    
@@ -57,13 +66,14 @@ export default {
         this.$emit('no-results-found', place, this.id);
         return;
       }
+      this.autocompleteText = document.getElementById(this.id).value
       this.locationSelected = {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
-        address: place.formatted_address
+        address: this.autocompleteText
       }
+      
       this.$emit('placechanged', this.locationSelected);
-      this.autocompleteText = document.getElementById(this.id).value
     }
   }
 }

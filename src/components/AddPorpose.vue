@@ -84,10 +84,9 @@
           <b-col>
             <b-form-group label="Ubicación:" label-for="location">
               <gmaps-autocomplete   id="location"
-                                    ref="gmapAutocomplete"
-                                    v-model="form.location"
                                     placeholder="Ingresar una ubicación"
                                     country="ar"
+                                    :defaultValue="form.location"
                                     :geolocationOptions="{lat:-34.097695, lng:-59.030265}"
                                     @placechanged="setPlace">
               </gmaps-autocomplete>
@@ -101,7 +100,7 @@
             ></gmap-map>
           </b-col>
         </b-row>
-        <b-button type="submit" variant="primary">Crear</b-button>
+        <b-button type="submit" variant="primary">{{buttonLabel}}</b-button>
         <b-button type="reset" variant="danger">Limpiar</b-button>
       </b-form>
     </b-container>
@@ -140,9 +139,6 @@ export default {
       }, {
         text: 'Propuestas / Proyectos',
         href: '#/porposes_projects'
-      }, {
-        text: 'Alta de propuesta',
-        active: true
       }],
       form: {
         title: '',
@@ -158,7 +154,9 @@ export default {
       tagsSelected: [],
       searchTags: '',
       tagsSearched: [],
-      locationSelected: {}
+      locationSelected: {},
+      toUpdate: false,
+      buttonLabel: 'Crear'
     }
   },
   computed: {
@@ -190,7 +188,6 @@ export default {
               loader.hide()
               let porposeR = result.data.message
               let location = JSON.parse(porposeR.location)
-
               if (location) {
                 this.setPlace(location)
               }
@@ -199,17 +196,30 @@ export default {
                 title: porposeR.title,
                 idNode: porposeR.idNode,
                 details: porposeR.details,
-                location: location ? location.address : '',
-                amount: porposeR.amount
+                location: (location ? location.address : ''),
+                amount: (porposeR.amount ? porposeR.amount : '')
               }
-              this.personsSelected = result.persons
-              this.tagsSelected = result.labels
+
+              this.personsSelected = porposeR.persons
+              this.tagsSelected = porposeR.labels
+
+              this.toUpdate = this.$route.query.porposeId
+              this.title = 'Modificación de Propuesta'
+              this.buttonLabel = 'Modificar'
+              this.bread.push({
+                text: 'Modificación de propuesta',
+                active: true
+              })
             }).catch(err => {
               loader.hide()
               this.getErrorMessage(err)
             })
         } else {
           loader.hide()
+          this.bread.push({
+            text: 'Alta de propuesta',
+            active: true
+          })
         }
       }).catch((err) => {
         loader.hide()
@@ -225,9 +235,6 @@ export default {
       evt.preventDefault()
       var loader = this.$loading.show()
       let params = _.clone(this.form)
-      if (this.$router.query.porposeId) {
-        params.id = this.$router.query.porposeId
-      }
       params.amount = params.amount === '' ? 0 : parseFloat(params.amount)
       params.persons = _.map(this.personsSelected, (pers) => {
         return pers.id
@@ -238,22 +245,41 @@ export default {
       if (!_.isEmpty(this.locationSelected)) {
         params.location = this.locationSelected
       }
-      porpose.post(params)
-        .then((result) => {
-          if (result.status === 201) {
-            this.$notify({
-              group: 'success',
-              title: 'Ok!',
-              text: result.data.message,
-              type: 'success'
-            })
-            this.onReset()
-          }
-          loader.hide()
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
+      if (this.toUpdate) {
+        porpose.update(this.toUpdate, params)
+          .then((result) => {
+            if (result.status === 200) {
+              this.$notify({
+                group: 'success',
+                title: 'Ok!',
+                text: result.data.message,
+                type: 'success'
+              })
+            }
+            loader.hide()
+            this.$route.push('porposes_projects')
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      } else {
+        porpose.post(params)
+          .then((result) => {
+            if (result.status === 201) {
+              this.$notify({
+                group: 'success',
+                title: 'Ok!',
+                text: result.data.message,
+                type: 'success'
+              })
+              this.onReset()
+            }
+            loader.hide()
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      }
     },
     onReset () {
       this.form = {
@@ -336,7 +362,6 @@ export default {
       }
     },
     selectTag (value) {
-      var loader = this.$loading.show()
       // console.log(value)
       if (value) {
         // {id,name}
@@ -344,6 +369,7 @@ export default {
           this.tagsSelected.push(value)
           this.searchTags = ''
         } else {
+          var loader = this.$loading.show()
           // #343a40 - negro
           // #0056b3 - azul
           tags.create({name: value.name, colour: '#343a40'})

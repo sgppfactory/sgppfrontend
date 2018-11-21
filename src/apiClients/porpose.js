@@ -13,7 +13,7 @@ export default {
     })
   },
   update: function (id, params) {
-    if (id && state) {
+    if (id && params) {
       return basicClient('/porpose/' + id, 'PUT', params)
     }
     return new Promise((resolve, reject) => {

@@ -33,7 +33,7 @@
           <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
-          <a @click="openModalChangeState(row.item.id)" v-b-tooltip.hover title="Cambiar Estado"><!-- v-b-modal.changeState -->
+          <a @click="openModalChangeState(row.item.id, row.item.state, row.item.type)" v-b-tooltip.hover title="Cambiar Estado"><!-- v-b-modal.changeState -->
             <icon name="level-up" />
           </a>
         </template>
@@ -141,7 +141,6 @@ export default {
       searchParam: '',
       cantPages: 1,
       cantResults: 1,
-      showChangeState: false,
       toChange: 0,
       isBusy: false,
       sortBy: 'title',
@@ -167,17 +166,32 @@ export default {
       localStorage.jwt = ''
       this.$router.push('/login')
     },
-    openModalChangeState (id) {
-      var loader = this.$loading.show()
+    openModalChangeState (id, state, type) {
+      // var loader = this.$loading.show()
       // 'Creado','Cancelado','Avanzado - Propuesta','Proyecto nuevo','Avanzado - Proyecto','Finalizado'
       // Propuesta: Dar de baja la propuesta y Avanzar de Etapa
       // Proyecto: Dar de baja el proyecto, Notificar avance y Finalizar Proyecto
-      this.optionsNodes = []
+      if (type === 1) { //Es igual a propuesta
+        this.optionsNodes = [
+          {text: "Seleccione una opción", value: ""},
+          {text: "Avanzar de Etapa", value: "advance"},
+          {text: "Dar de baja la propuesta", value: "delete"} 
+        ]
+      } else {
+        this.optionsNodes = [
+          {text: "Seleccione una opción", value: ""},
+          {text: "Notificar avance", value: "notify"}, 
+          {text: "Finalizar proyecto", value: "final"}, 
+          {text: "Dar de baja el proyecto", value: "delete"}
+        ]
+      }
+      this.toChange = id
       this.$refs.changeState.show()
-      loader.hide()
+      // loader.hide()
     },
     hideChangeState () {
       this.optionsNodes = []
+      this.toChange = 0
       this.$refs.changeState.hide()
     },
     getLinkPag (page) {
@@ -251,11 +265,12 @@ export default {
     changeState () {
       var loader = this.$loading.show()
       porpose
-        .changeState(this.toChange, this.showChangeState)
+        .changeState(this.toChange, this.stateSelect)
         .then((result) => {
           loader.hide()
-          this.showChangeState = false
+          this.$refs.changeState.hide()
           this.showSuccessMsg(result)
+          this.search(1)
         }).catch((err) => {
           loader.hide()
           this.getErrorMessage(err)
@@ -290,5 +305,9 @@ li {
 }
 .form-inline {
   margin-bottom: 20px;
+}
+a:not([href]):not([tabindex]) {
+  color: #007bff;
+  cursor: pointer;
 }
 </style>
