@@ -10,8 +10,13 @@ export default {
   post: function (params) {
     return basicClient('/person', 'POST', params)
   },
-  update: function (params) {
-    return basicClient('/person', 'PUT', params)
+  update: function (id, params) {
+    if (id && params) {
+      return basicClient('/person/' + id, 'PUT', params)
+    }
+    return new Promise((resolve, reject) => {
+      reject('Faltan parámetros en la consulta')
+    })
   },
   remove: function (id) {
     return basicClient('/person/' + id, 'DELETE')

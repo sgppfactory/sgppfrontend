@@ -249,12 +249,7 @@ export default {
         porpose.update(this.toUpdate, params)
           .then((result) => {
             if (result.status === 200) {
-              this.$notify({
-                group: 'success',
-                title: 'Ok!',
-                text: result.data.message,
-                type: 'success'
-              })
+              this.getSuccessMessage(result)
             }
             loader.hide()
             this.$route.push('porposes_projects')
@@ -266,12 +261,7 @@ export default {
         porpose.post(params)
           .then((result) => {
             if (result.status === 201) {
-              this.$notify({
-                group: 'success',
-                title: 'Ok!',
-                text: result.data.message,
-                type: 'success'
-              })
+              this.getSuccessMessage(result)
               this.onReset()
             }
             loader.hide()
@@ -342,6 +332,14 @@ export default {
         }
       })
     },
+    getSuccessMessage (msg) {
+      this.$notify({
+        group: 'success',
+        title: 'Ok!',
+        text: msg.data.message,
+        type: 'success'
+      })
+    },
     setPlace (place) {
       if (place) {
         var lat = place.lat
@@ -376,6 +374,7 @@ export default {
             .then(result => {
               this.tagsSelected.push(value)
               this.searchTags = ''
+              this.getSuccessMessage(result)
               loader.hide()
             }).catch(err => {
               loader.hide()

@@ -98,7 +98,7 @@
             </b-form-group>
           </b-col>
         </b-row>
-        <b-button type="submit" variant="primary">Crear</b-button>
+        <b-button type="submit" variant="primary">{{buttonLabel}}</b-button>
         <b-button type="reset" variant="danger">Limpiar</b-button>
       </b-form>
     </b-container>
@@ -134,9 +134,6 @@ export default {
       }, {
         text: 'Personas',
         href: '#/persons'
-      }, {
-        text: 'Alta de persona',
-        active: true
       }],
       form: {
         name: '',
@@ -150,7 +147,10 @@ export default {
         datenac: ''
       },
       optionsRols: [],
-      locationSelected: {}
+      locationSelected: {},
+      toUpdate: false,
+      buttonLabel: 'Crear',
+      marker: {}
     }
   },
   computed: {
@@ -195,9 +195,22 @@ export default {
                   withuser: withuser,
                   rol: person.idRol
                 }
+
+                this.title = 'Modificación de Persona'
+                this.toUpdate = this.$route.query.personId
+                this.buttonLabel = 'Modificar'
+                this.bread.push({
+                  text: 'Modificación de persona',
+                  active: true
+                })
               })
+
           } else {
             loader.hide()
+            this.bread.push({
+              text: 'Alta de persona',
+              active: true
+            })
           }
         }
       }).catch(() => {
@@ -221,23 +234,42 @@ export default {
         params.location = this.locationSelected
       }
 
-      persons.post(params)
-        .then((result) => {
-          // console.log(result)
-          if (result.status === 201) {
-            this.$notify({
-              group: 'success',
-              title: 'Ok!',
-              text: result.data.message,
-              type: 'success'
-            })
-            this.onReset()
-          }
-          loader.hide()
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
+      if (this.toUpdate) {
+        persons.update(this.toUpdate, params)
+          .then((result) => {
+            if (result.status === 200) {
+              this.$notify({
+                group: 'success',
+                title: 'Ok!',
+                text: result.data.message,
+                type: 'success'
+              })
+            }
+            loader.hide()
+            this.$route.push('persons')
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      } else {
+        persons.post(params)
+          .then((result) => {
+            // console.log(result)
+            if (result.status === 201) {
+              this.$notify({
+                group: 'success',
+                title: 'Ok!',
+                text: result.data.message,
+                type: 'success'
+              })
+              this.onReset()
+            }
+            loader.hide()
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      }
     },
     onReset () {
       this.form = {
@@ -261,10 +293,17 @@ export default {
         if (lat && lng) {
           this.$refs.mapRef.$mapCreated.then((map) => {
             const position = new google.maps.LatLng(lat, lng)
-            const marker = new google.maps.Marker({ 
+
+            // si tiene marcador en el mapa, se lo saco y hago uno nuevo
+            if (!_.isEmpty(this.marker)) {
+              this.marker.setMap(null)
+            }
+
+            this.marker = new google.maps.Marker({ 
               position,
               map
             })
+
             map.panTo({lat: lat, lng: lng})
           })
         }
