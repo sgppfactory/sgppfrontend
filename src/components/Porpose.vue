@@ -30,7 +30,7 @@
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
-          <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
+          <a @click="showDetails(row)" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
           <a @click="openModalChangeState(row.item.id, row.item.state, row.item.type)" v-b-tooltip.hover title="Cambiar Estado"><!-- v-b-modal.changeState -->
@@ -40,8 +40,8 @@
         <template slot="empty">¡Sin propuestas o proyectos para mostrar!</template>
         <template slot="row-details" slot-scope="row">
           <b-card>
-            <ul>
-              <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value}}</li>
+            <ul class="details">
+              <li v-for="(value, key) in row.item" :key="key"><b>{{ key }}</b>: {{ value }}</li>
             </ul>
           </b-card>
         </template>
@@ -171,23 +171,23 @@ export default {
       // 'Creado','Cancelado','Avanzado - Propuesta','Proyecto nuevo','Avanzado - Proyecto','Finalizado'
       // Propuesta: Dar de baja la propuesta y Avanzar de Etapa
       // Proyecto: Dar de baja el proyecto, Notificar avance y Finalizar Proyecto
-      if (type === 1) { //Es igual a propuesta
+      if (type === 1) {
+      //Es igual a propuesta
         this.optionsNodes = [
-          {text: "Seleccione una opción", value: ""},
-          {text: "Avanzar de Etapa", value: "advance"},
-          {text: "Dar de baja la propuesta", value: "delete"} 
+          {text: 'Seleccione una opción', value: ''},
+          {text: 'Avanzar de Etapa', value: 'advance'},
+          {text: 'Dar de baja la propuesta', value: 'delete'}
         ]
       } else {
         this.optionsNodes = [
-          {text: "Seleccione una opción", value: ""},
-          {text: "Notificar avance", value: "notify"}, 
-          {text: "Finalizar proyecto", value: "final"}, 
-          {text: "Dar de baja el proyecto", value: "delete"}
+          {text: 'Seleccione una opción', value: ''},
+          {text: 'Notificar avance', value: 'notify'},
+          {text: 'Finalizar proyecto', value: 'final'},
+          {text: 'Dar de baja el proyecto', value: 'delete'}
         ]
       }
       this.toChange = id
       this.$refs.changeState.show()
-      // loader.hide()
     },
     hideChangeState () {
       this.optionsNodes = []
@@ -233,14 +233,14 @@ export default {
           this.getErrorMessage(error)
         })
     },
-    showDetails (id) {
+    showDetails (row) {
+      console.log(row)
       var loader = this.$loading.show()
-      porpose.get(id)
+      porpose.getById(row.item.id)
         .then((result) => {
           loader.hide()
           if (result.status === 200) {
-            this.toRemove = 0
-            this.showSuccessMsg(result)
+            row.toggleDetails()
           }
         }).catch((error) => {
           loader.hide()
@@ -302,6 +302,14 @@ ul {
 li {
   display: inline-block;
   margin: 0 10px;
+}
+ul.details {
+  list-style-type: none;
+  padding: 0;
+}
+ul.details li {
+  display: block;
+  margin: 5px; 
 }
 .form-inline {
   margin-bottom: 20px;

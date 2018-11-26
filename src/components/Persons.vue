@@ -39,7 +39,7 @@
         <template slot="row-details" slot-scope="row">
           <b-card>
             <ul>
-              <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value}}</li>
+              <li v-for="(value, key) in row.item" :key="key"><b>{{ key }}</b>: {{ value }}</li>
             </ul>
           </b-card>
         </template>
@@ -143,7 +143,7 @@ export default {
         params.page = page
       }
       // Muestro de a 10 registros...
-      params.bypage = 5
+      params.bypage = 10
 
       persons.getFilter(params)
         .then((result) => {
@@ -151,7 +151,7 @@ export default {
           this.persons = (result.status === 200)
           ? result.data.result
           : []
-          // console.log(result.data)
+
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
         }).catch((result) => {
@@ -231,6 +231,14 @@ li {
 a:not(.btn) {
   color: #42b983;
   cursor: pointer;
+}
+ul.details {
+  list-style-type: none;
+  padding: 0;
+}
+ul.details li {
+  display: block;
+  margin: 5px; 
 }
 .form-inline {
   margin-bottom: 20px;

@@ -195,7 +195,7 @@ export default {
               this.form = {
                 title: porposeR.title,
                 idNode: porposeR.idNode,
-                details: porposeR.details,
+                details: (porposeR.details ? porposeR.details : ''),
                 location: (location ? location.address : ''),
                 amount: (porposeR.amount ? porposeR.amount : '')
               }
@@ -372,9 +372,17 @@ export default {
           // #0056b3 - azul
           tags.create({name: value.name, colour: '#343a40'})
             .then(result => {
-              this.tagsSelected.push(value)
-              this.searchTags = ''
-              this.getSuccessMessage(result)
+              if (result.data.id) {
+                value.id = result.data.id
+                this.tagsSelected.push(value)
+                this.searchTags = ''
+                this.getSuccessMessage(result)
+              } else {
+                this.getErrorMessage({
+                  status: 409,
+                  data: {message: 'Error al agregar la etiqueta, inténtelo nuevamente'}
+                })
+              }
               loader.hide()
             }).catch(err => {
               loader.hide()
@@ -431,7 +439,7 @@ li {
 a {
   color: #42b983;
 }
-#personsSelectedId {
+#personsSelectedId, #tagsSelectedId {
   margin-top: 10px;
 }
 span.badge {

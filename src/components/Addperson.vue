@@ -63,9 +63,9 @@
             <b-form-group label="Ubicación o domicilio:" label-for="location">
               <gmaps-autocomplete   id="location"
                                     ref="gmapAutocomplete"
-                                    v-model="form.location"
                                     placeholder="Ingresar una ubicación"
                                     country="ar"
+                                    :defaultValue="form.location"
                                     :geolocationOptions="{lat:-34.097695, lng:-59.030265}"
                                     @placechanged="setPlace">
               </gmaps-autocomplete>
@@ -109,8 +109,8 @@
 
 <script>
 import 'vue-awesome/icons'
-import persons from '../apiClients/persons'
-import rol from '../apiClients/rol'
+import persons from '@/apiClients/persons'
+import rol from '@/apiClients/rol'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
 import {formatResponse} from '../utils/tools.js'

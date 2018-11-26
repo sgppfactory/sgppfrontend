@@ -92,6 +92,9 @@ export default {
   created () {
     var params = {}
     params.bypage = 5
+    params.orderby = 'id'
+    params.criteria = 'DESC'
+    params.filter = [{key: 'type', value: 1, operator: '='}]
     // params.orderby = 5
     porpose.getFilter(params)
       .then((response) => {
@@ -99,6 +102,17 @@ export default {
           ? response.data.result
           : []
         this.porposeEnabled = response.data ? response.data.total : 0
+      }).catch((error) => {
+        this.getErrorMessage(error)
+      })
+
+    var params2 = {}
+    params2.bypage = 1
+    params2.filter = [{key: 'type', value: 2, operator: '='}]
+    // params.orderby = 5
+    porpose.getFilter(params2)
+      .then((response) => {
+        this.projectsEnabled = response.data ? response.data.total : 0
       }).catch((error) => {
         this.getErrorMessage(error)
       })

@@ -1,10 +1,7 @@
 import httpClient from 'axios'
 import _ from 'underscore'
-import config from '../../config'
-// const BASE_URL = 'http://localhost:3000';
 
 export {basicClient}
-// console.log(Vue.config, process.API_URL)
 
 function basicClient (url, method, params) {
   var data
@@ -31,7 +28,7 @@ function basicClient (url, method, params) {
   return httpClient.request(_.extend({
     url: url,
     method: method,
-    baseURL: config.API_URL
+    baseURL: process.env.API_URL
     // headers: header
   }, data, header))
 }

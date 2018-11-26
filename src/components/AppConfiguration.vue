@@ -113,7 +113,7 @@ export default {
           loader.hide()
         }).catch((error) => {
           loader.hide()
-          this.getErrorMessage()
+          this.getErrorMessage(error)
         })
     }
   }

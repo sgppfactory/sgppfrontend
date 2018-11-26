@@ -155,15 +155,20 @@ export default {
         },
         {
           events (start, end, timezone, callback) {
+            var loader = self.$loading.show()
             let params = {start: start, end: end}
             tasks.getFilter(params)
               .then((response) => {
                 console.log(response.data)
                 self.cantResults = response.data.total
                 if (response.status === 200) {
-                  callback(response.data.data)
+                  callback(response.data.result)
                 }
-              }).catch(self.getErrorMessage)
+                loader.hide()
+              }).catch(err => {
+                loader.hide()
+                self.getErrorMessage(err)
+              })
             // self.$http.get(`/anotherFeed`, {timezone: self.timezone}).then(response => {
             // })
           },

@@ -23,12 +23,10 @@
     </b-jumbotron>
   </div>
 </template>
-<!--   <div align="center">
-    <img src="static/loading.gif" border="0">
-  </div> -->
 
 <script>
-import auth from '../apiClients/auth'
+import auth from '@/apiClients/auth'
+
 export default {
   name: 'Login',
   data () {
@@ -100,7 +98,9 @@ export default {
   .title-login {
     margin-bottom: 50px;
   }
-
+  .jumbotron {
+    background-color: rgba(233, 236, 239, 0.9)
+  }
 </style>
 
 <style>

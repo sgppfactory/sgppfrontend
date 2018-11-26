@@ -7,6 +7,8 @@
 </template>
 
 <script>
+import GoogleMapsLoader from 'google-maps'
+
 export default {
   name: 'GmapsAutocomplete',
   props: {
@@ -38,33 +40,38 @@ export default {
       autocompleteText: ''
     }
   },
-  created () {
+  mounted () {
     if (this.defaultValue) {
       this.autocompleteText = this.defaultValue
     }
-  },
-  mounted () {    
-    // TODO: Ver el tema del país por implementación
-    this.autocomplete = new google.maps.places.Autocomplete(
-      document.getElementById(this.id),
-      {types: ['geocode'], componentRestrictions: {country: this.country}}
-    )
+    var self = this
+    GoogleMapsLoader.load(function(google) {
+      console.log(google)
+      // new google.maps.Map(el, options);
+      // TODO: Ver el tema del país por implementación
+      if (google.maps) {
+        self.autocomplete = new google.maps.places.Autocomplete(
+          document.getElementById(self.id),
+          {types: ['geocode'], componentRestrictions: {country: self.country}}
+        )
 
-    this.autocomplete.addListener('place_changed', this.onPlaceChanged)
+        self.autocomplete.addListener('place_changed', self.onPlaceChanged)
 
-    var circle = new google.maps.Circle({
-      center: this.geolocationOptions,
-      radius: 2
-    })
-
-    this.autocomplete.setBounds( circle.getBounds() )
+        var circle = new google.maps.Circle({
+          center: self.geolocationOptions,
+          radius: 2
+        })
+        console.log(circle)
+        self.autocomplete.setBounds(circle.getBounds())
+      }
+    });
   },
   methods: {
     onPlaceChanged() {
-      let place = this.autocomplete.getPlace();
+      let place = this.autocomplete.getPlace()
       if (!place.geometry) {
-        this.$emit('no-results-found', place, this.id);
-        return;
+        this.$emit('no-results-found', place, this.id)
+        return
       }
       this.autocompleteText = document.getElementById(this.id).value
       this.locationSelected = {
@@ -73,7 +80,7 @@ export default {
         address: this.autocompleteText
       }
       
-      this.$emit('placechanged', this.locationSelected);
+      this.$emit('placechanged', this.locationSelected)
     }
   }
 }
