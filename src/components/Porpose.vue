@@ -19,7 +19,8 @@
         :items="porposeprojects" 
         :fields="fields" 
         :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc" >
+        :sort-desc.sync="sortDesc" 
+        id="porpose-table">
         <template slot="HEAD_actions">
           Opciones
         </template>
@@ -40,9 +41,50 @@
         <template slot="empty">¡Sin propuestas o proyectos para mostrar!</template>
         <template slot="row-details" slot-scope="row">
           <b-card>
-            <ul class="details">
-              <li v-for="(value, key) in row.item" :key="key"><b>{{ key }}</b>: {{ value }}</li>
-            </ul>
+            <b-row>
+              <b-col>
+                <ul class="details">
+                  <li v-for="(value, key) in dataDetails" :key="key"><b>{{ key }}</b>: {{ value }}</li>
+                </ul>
+                <h5>Registros de avance:</h5>
+                <b-table striped hover :items="advanceProjectsDetails" :fields="advanceHeaders">
+                </b-table>
+                <b-pagination-nav :total-rows="cantRowsAdvance"
+                                  align="center"
+                                  :per-page="6"
+                                  v-model="currentPageAdvance"
+                                  @change="changePaginationAdvances" />
+              </b-col>
+              <b-col>
+                <!-- <div id="gmapsdetails"></div> -->
+                <gmap-map ref="mapRef"
+                          :center="{lat:-34.097695, lng:-59.030265}"
+                          :zoom="14"
+                          map-type-id="terrain"
+                          style="width: 100%; height: 300px">
+                </gmap-map>
+                <div class="bars-progress">
+                  <h5>Avance Total:</h5>
+                  <b-progress :precision="2" show-value variant="success" class="mb-2" show-progress>
+                    <b-progress-bar :value="totalAdvance" variant="success">
+                      Avance: {{totalAdvance}} %
+                    </b-progress-bar>
+                  </b-progress>
+                  <b-progress :precision="2" :max="maxAmount" show-valueclass="mb-2">
+                    <b-progress-bar :value="amountAdvance">
+                      Monto gastado: $ {{amountAdvance}}
+                    </b-progress-bar>
+                  </b-progress>
+                </div>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col>
+                <b-btn size="sm" variant="danger" @click="toggleRow(row)">
+                  Cerrar
+                </b-btn>
+              </b-col>
+            </b-row>
           </b-card>
         </template>
       </b-table>
@@ -61,9 +103,40 @@
       <p class="my-2">La propuesta cambia de estado a:</p>
       <b-form-select  id="state" 
                       placeholder="Seleccionar un estado" 
-                      v-model="stateSelect" 
+                      v-model="stateSelect"
                       :options="optionsNodes">
       </b-form-select>
+      <div class="form-notify" v-show="notifyAdvanceForm">
+        <h5>Notificación de avance</h5>
+        <b-form-group label="Porcentaje:" label-for="percent">
+          <b-form-input id="percent"
+                        type="text"
+                        v-model.trim="advanceProject.percent"
+                        required
+                        placeholder="Ingrese un porcentaje de avance"
+                        v-b-tooltip.click.blur.rightbottom 
+                        title="Campo requerido">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Monto gastado:" label-for="amount">
+          <b-form-input id="amount"
+                        type="text"
+                        v-model.trim="advanceProject.mount"
+                        required
+                        placeholder="Ingrese un porcentaje de avance"
+                        v-b-tooltip.click.blur.rightbottom 
+                        title="Campo requerido">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group label="Notas:" label-for="notes">
+          <b-form-textarea id="notes"
+                        type="text"
+                        v-model.trim="advanceProject.notes"
+                        required
+                        placeholder="Ingrese notas al respecto del avance">
+          </b-form-textarea>
+        </b-form-group>
+      </div>
       <div slot="modal-footer" class="w-100 text-right">
        <b-btn size="sm" variant="danger" @click="changeState">
          Cambiar
@@ -81,7 +154,7 @@
 import 'vue-awesome/icons'
 import porpose from '@/apiClients/porpose'
 import Menu from '@/components/Menu'
-import {formatResponse} from '../utils/tools.js'
+import {formatResponse} from '@/utils/tools.js'
 import _ from 'underscore'
 export default {
   name: 'PorposesProjects',
@@ -146,7 +219,52 @@ export default {
       sortBy: 'title',
       sortDesc: false,
       optionsNodes: [],
-      stateSelect: ''
+      stateSelect: '',
+      notifyAdvanceForm: false,
+      advanceProject: {
+        percent: '',
+        amount: 0,
+        notes: ''
+      },
+      advanceProjectsDetails: [],
+      advanceHeaders: [
+        {
+          label: 'Porcentaje', 
+          key: 'percent',
+          formatter: (value) => {
+            return value + '%'
+          }
+        },
+        {
+          label: 'Monto gastado', 
+          key: 'amount',
+          formatter: (value) => {
+            return  value ? '$ ' + value : ''
+          }
+        },
+        {label: 'Notas', key: 'notes'},
+        {
+          label: 'Fecha', 
+          key: 'created_at',
+          formatter: (value) => {
+            if (value) {
+              let dateP = new Date(value)
+              return dateP.toLocaleString('es-AR')
+            }
+            return ''
+          }
+        }
+      ],
+      totalAdvance: 0,
+      amountAdvance: 0,
+      maxAmount: 0,
+      dataDetails: {},
+      labelsDetails: [],
+      personsDetails: [],
+      cantRowsAdvance: 0,
+      currentPageAdvance: 0,
+      marker: {},
+      map: null
     }
   },
   computed: {
@@ -160,6 +278,12 @@ export default {
   },
   created () {
     this.search(this.$route.query.page)
+  },
+  watch: {
+    // whenever question changes, this function will run
+    stateSelect: function (newState, oldQuestion) {
+      this.notifyAdvanceForm = newState === 'notify'
+    }
   },
   methods: {
     logout () {
@@ -215,7 +339,6 @@ export default {
 
       porpose.getFilter(params)
         .then((result) => {
-          // console.log(JSON.parse(result.data.result))
           loader.hide()
           this.porposeprojects = (result.status === 200)
             ? _.map(
@@ -234,18 +357,80 @@ export default {
         })
     },
     showDetails (row) {
-      console.log(row)
-      var loader = this.$loading.show()
-      porpose.getById(row.item.id)
-        .then((result) => {
-          loader.hide()
-          if (result.status === 200) {
-            row.toggleDetails()
-          }
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
+      // Necesito eliminar todas las filas antes de abrir otra...
+      var elementsToRemove = document.getElementsByClassName('b-table-details');
+      while(elementsToRemove.length > 0){
+          elementsToRemove[0].parentNode.removeChild(elementsToRemove[0]);
+      }
+      if (!row.detailsShowing) {
+        var loader = this.$loading.show()
+        var self = this
+        row.toggleDetails()
+        porpose.getById(row.item.id)
+          .then((result) => {
+            if (result.status === 200) {
+              var porpose = result.data.message
+              var date = new Date(porpose.created_at)
+              var localeString = date.toLocaleString("es-AR");
+              var place = JSON.parse(porpose.location)
+              var lat = place.lat
+              var lng = place.lng
+
+              this.dataDetails = {
+                'Título': porpose.title,
+                'Estado': porpose.state,
+                'Tipo': porpose.type === 1 ? 'Propuesta' : 'Proyecto',
+                'Ubicación': place.address ? place.address : ' - ',
+                'Creado el': porpose.created_at ? localeString : '',
+                'Monto destinado': porpose.amount ? '$ ' + porpose.amount : ' - ',
+                'Detalles': (_.isEmpty(porpose.details) || porpose.details === 'null') ? '' : porpose.details
+              }
+
+              var totalShow = 5
+
+              this.advanceProjectsDetails = porpose.project_steps
+              this.labelsDetails = porpose.labels
+              this.personsDetails = porpose.persons
+
+              self.totalAdvance = _.reduce(_.pluck(porpose.project_steps, 'percent'), (memo, item) => {
+                return memo + item
+              })
+
+              self.amountAdvance = _.reduce(_.pluck(porpose.project_steps, 'amount'), (memo, item) => {
+                return memo + item
+              })
+
+              self.maxAmount = porpose.amount ? porpose.amount : self.amountAdvance
+              self.cantRowsAdvance = porpose.project_steps ? porpose.project_steps.length / totalShow : 0
+              self.currentPageAdvance = 1
+
+              if (lat && lng) {
+                self.$refs.mapRef.$mapCreated.then((map) => {
+                  const position = new google.maps.LatLng(lat, lng)
+
+                  // si tiene marcador en el mapa, se lo saco y hago uno nuevo
+                  if (!_.isEmpty(self.marker)) {
+                    self.marker.setMap(null)
+                  }
+
+                  self.marker = new google.maps.Marker({ 
+                    position,
+                    map
+                  })
+
+                  map.panTo({lat: lat, lng: lng})
+                  loader.hide()
+                })
+              } else {
+                loader.hide()
+              }
+            }
+          }).catch((error) => {
+            // console.log(error)
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      }
     },
     getErrorMessage (result) {
       formatResponse(result, (err) => {
@@ -264,13 +449,17 @@ export default {
     },
     changeState () {
       var loader = this.$loading.show()
+      var advance = null
+      if (this.stateSelect === 'notify') {
+        advance = this.advanceProject
+      }
       porpose
-        .changeState(this.toChange, this.stateSelect)
+        .changeState(this.toChange, this.stateSelect, advance)
         .then((result) => {
           loader.hide()
           this.$refs.changeState.hide()
           this.showSuccessMsg(result)
-          this.search(1)
+          this.search(this.$route.query.page)
         }).catch((err) => {
           loader.hide()
           this.getErrorMessage(err)
@@ -284,6 +473,12 @@ export default {
         type: 'success',
         position: 'bottom right'
       })
+    },
+    changePaginationAdvances (page) {
+
+    },
+    toggleRow(row) {
+      row.toggleDetails()
     }
   }
 }
@@ -317,5 +512,16 @@ ul.details li {
 a:not([href]):not([tabindex]) {
   color: #007bff;
   cursor: pointer;
+}
+.form-notify {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e9ecef;
+}
+h5. {
+  margin-top: 5px;
+}
+div.bars-progress {
+  margin-top: 20px;
 }
 </style>

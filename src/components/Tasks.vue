@@ -7,7 +7,7 @@
         <!-- <b-col sm="10">
         </b-col> -->
         <b-col sm="12">
-          <b-button variant="primary" href="#/addtasks">
+          <b-button variant="primary" href="#/addtasks" class="float-xl-right">
             <icon name="plus" height="10" /> Nueva Tarea
           </b-button>
         </b-col>

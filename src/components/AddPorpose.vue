@@ -25,7 +25,7 @@
               </b-form-select>
             </b-form-group>
 
-            <b-form-group label="Persona/s relacionada/s:" label-for="persons">
+            <b-form-group label="Persona/s Relacionada/s:" label-for="persons">
               <!-- <b-input-group prepend="search"> -->
               <vue-bootstrap-typeahead :data="personsSearched"
                                         v-model="searchPerson"
@@ -156,6 +156,7 @@ export default {
       tagsSearched: [],
       locationSelected: {},
       toUpdate: false,
+      marker: {},
       buttonLabel: 'Crear'
     }
   },
@@ -309,7 +310,6 @@ export default {
             ? result.data.result
             : []
         }).catch(err => {
-          loader.hide()
           this.getErrorMessage(err)
         })
     },
@@ -350,7 +350,13 @@ export default {
         if (lat && lng) {
           this.$refs.mapRef.$mapCreated.then((map) => {
             const position = new google.maps.LatLng(lat, lng)
-            const marker = new google.maps.Marker({ 
+
+            // si tiene marcador en el mapa, se lo saco y hago uno nuevo
+            if (!_.isEmpty(this.marker)) {
+              this.marker.setMap(null)
+            }
+            
+            this.marker = new google.maps.Marker({ 
               position,
               map
             })
@@ -413,10 +419,7 @@ export default {
           if (!isEqual) {
             this.tagsSearched.push({pretext: 'Agregar etiqueta: ', name: this.searchTags, id: 0})
           }
-        }).catch(err => {
-          loader.hide()
-          this.getErrorMessage(err)
-        })
+        }).catch(this.getErrorMessage)
     }
   }
 }

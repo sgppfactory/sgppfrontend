@@ -28,7 +28,7 @@
             <icon name="edit" />
           </router-link>
           <!-- v-bind="row.detailsShowing"  -->
-          <a @click.stop="row.toggleDetails" v-b-tooltip.hover title="Más información">
+          <a @click.stop="showDetails(row)" v-b-tooltip.hover title="Más información">
             <icon name="info" />
           </a>
           <a @click="toRemove=row.item.id" v-b-tooltip.hover title="Borrar persona" v-b-modal.deleteModal class="danger">
@@ -38,9 +38,29 @@
         <template slot="empty">¡Sin personas para mostrar!</template>
         <template slot="row-details" slot-scope="row">
           <b-card>
-            <ul>
-              <li v-for="(value, key) in row.item" :key="key"><b>{{ key }}</b>: {{ value }}</li>
-            </ul>
+            <b-row>
+              <b-col>
+                <ul class="details">
+                  <li v-for="(value, key) in dataDetails" :key="key"><b>{{ key }}</b>: {{ value }}</li>
+                </ul>
+              </b-col>
+              <b-col>
+                <!-- <div id="gmapsdetails"></div> -->
+                <gmap-map ref="mapRef"
+                          :center="{lat:-34.097695, lng:-59.030265}"
+                          :zoom="14"
+                          map-type-id="terrain"
+                          style="width: 100%; height: 300px">
+                </gmap-map>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col>
+                <b-btn size="sm" variant="danger" @click="toggleRow(row)">
+                  Cerrar
+                </b-btn>
+              </b-col>
+            </b-row>
           </b-card>
         </template>
       </b-table>
@@ -103,7 +123,9 @@ export default {
       toRemove: 0,
       isBusy: false,
       sortBy: 'name',
-      sortDesc: false
+      sortDesc: false,
+      marker: null,
+      dataDetails: {}
     }
   },
   computed: {
@@ -181,19 +203,66 @@ export default {
           this.getErrorMessage(error)
         })
     },
-    showDetails (id) {
-      var loader = this.$loading.show()
+    showDetails (row) {
+      // Necesito eliminar todas las filas antes de abrir otra...
+      var elementsToRemove = document.getElementsByClassName('b-table-details');
+      while(elementsToRemove.length > 0){
+          elementsToRemove[0].parentNode.removeChild(elementsToRemove[0]);
+      }
+      if (!row.detailsShowing) {
+        var loader = this.$loading.show()
+        var self = this
+        row.toggleDetails()
+        persons.getById(row.item.id)
+          .then((result) => {
+            console.log(result)
+            if (result.status === 200) {
+              var person = result.data.message
+              var date = new Date(person.created_at)
+              var localeString = date.toLocaleString("es-AR");
+              var place = JSON.parse(person.location)
+              var lat = place ? place.lat : ''
+              var lng = place ? place.lng : ''
 
-      persons.get(id)
-        .then((result) => {
-          loader.hide()
-          if (result.status === 200) {
-            this.toRemove = 0
-          }
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
+              this.dataDetails = {
+                'Nombre': person.name,
+                'Apellido': person.lastname,
+                'E-mail': person.email,
+                'Domicilio': place ? place.address : ' - ',
+                'Teléfono': person.tel ? person.tel : ' - ',
+                'Celular': person.cel ? person.cel : ' - ',
+                'Fecha de nacimiento': person.date_birth ? person.date_birth : ' - ',
+                'Creada el': person.created_at ? localeString : ' - ',
+                'Usuario': person.user ? person.user : ' - '
+              }
+
+              if (lat && lng) {
+                self.$refs.mapRef.$mapCreated.then((map) => {
+                  const position = new google.maps.LatLng(lat, lng)
+
+                  // si tiene marcador en el mapa, se lo saco y hago uno nuevo
+                  if (!_.isEmpty(self.marker)) {
+                    self.marker.setMap(null)
+                  }
+
+                  self.marker = new google.maps.Marker({ 
+                    position,
+                    map
+                  })
+
+                  map.panTo({lat: lat, lng: lng})
+                  loader.hide()
+                })
+              } else {
+                loader.hide()
+              }
+            }
+          }).catch((error) => {
+            console.log(error)
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+        }
     },
     getErrorMessage (result) {
       formatResponse(result, (err) => {
@@ -209,6 +278,30 @@ export default {
           })
         }
       })
+    },
+    setPlace (place) {
+      if (place) {
+        var lat = place.lat
+        var lng = place.lng
+
+        if (lat && lng) {
+          this.$refs.mapRef.$mapCreated.then((map) => {
+            const position = new google.maps.LatLng(lat, lng)
+
+            // si tiene marcador en el mapa, se lo saco y hago uno nuevo
+            if (!_.isEmpty(this.marker)) {
+              this.marker.setMap(null)
+            }
+
+            this.marker = new google.maps.Marker({ 
+              position,
+              map
+            })
+
+            map.panTo({lat: lat, lng: lng})
+          })
+        }
+      }
     }
   }
 }

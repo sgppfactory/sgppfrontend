@@ -6,7 +6,7 @@
       <h1>{{title}}</h1>
       <b-form @submit="submit" @reset="onReset">
         <b-row>
-          <b-col>
+          <b-col md="6" offset-md="3">
             <b-form-group label="Título:" label-for="title">
               <b-form-input id="title"
                             type="text"
@@ -17,10 +17,10 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Fecha y Hora:" label-for="date_hour">
-              <b-form-input id="date_hour"
+            <b-form-group label="Fecha y Hora:" label-for="dateHour">
+              <b-form-input id="dateHour"
                             type="date"
-                            v-model.trim="form.date_hour"
+                            v-model.trim="form.dateHour"
                             required
                             placeholder="Ingrese fecha y hora del comienzo de la tarea"
                             v-b-tooltip.click.blur.rightbottom 
@@ -37,24 +37,14 @@
                             title="Campo requerido">
               </b-form-input>
             </b-form-group>
-            <b-form-group label="Notas:" label-for="notes">
-              <b-form-input id="notes"
-                            type="text"
-                            v-model.trim="form.notes"
-                            required
-                            placeholder="Ingrese el nombre"
-                            v-b-tooltip.click.blur.rightbottom 
-                            title="Campo requerido">
-              </b-form-input>
-            </b-form-group>
             <b-form-group label="Persona/s relacionada/s:" label-for="persons">
               <vue-bootstrap-typeahead :data="personsSearched"
                                         v-model="searchPerson"
+                                        :serializer="s => s.lastname + ', ' + s.name + ' - ' + s.email"
                                         placeholder="Ingrese nombre y apellido de una persona"
-                                        :serializer="s => s.lastname + ', ' + s.name"
                                         @hit="selectPerson"
                                         @input="searchPersons" />
-              <div id="personsSelectedId" >
+              <div id="personsSelectedId">
                 <b-badge v-for="value in personsSelected" :id="value.id" :key="value.id" pill variant="primary">
                 {{value.lastname}}, {{value.name}} <a @click="deletePerson(value.id)" 
                                                       v-b-tooltip.hover 
@@ -64,20 +54,27 @@
                 </b-badge>
               </div>
             </b-form-group>
-            <b-form-group label="Estructura/Nodo:" label-for="node">
-              <b-form-input id="node"
-                            type="text"
-                            v-model.trim="form.id_node"
-                            placeholder="Seleccione un nodo o estructura">
-              </b-form-input>
+            <b-form-group label="Estructura/Nodo:" label-for="idNode">
+              <b-form-select id="idnode"
+                            v-model="form.idNode"
+                            :options="optionsNodes">
+              </b-form-select>
+            </b-form-group>
+
+            <b-form-group label="Notas:" label-for="notes">
+              <b-form-textarea id="notes"
+                            v-model.trim="form.notes"
+                            placeholder="Ingrese notas">
+              </b-form-textarea>
             </b-form-group>
           </b-col>
-          <b-col>
-
+        </b-row>
+        <b-row>
+          <b-col md="6" offset-md="3">
+            <b-button type="submit" variant="primary">Crear</b-button>
+            <b-button type="reset" variant="danger">Limpiar</b-button>
           </b-col>
         </b-row>
-        <b-button type="submit" variant="primary">Crear</b-button>
-        <b-button type="reset" variant="danger">Limpiar</b-button>
       </b-form>
     </b-container>
     <notifications group="success" />
@@ -90,6 +87,7 @@ import 'vue-awesome/icons'
 import tasks from '@/apiClients/tasks'
 import Menu from '@/components/Menu'
 import node from '@/apiClients/node'
+import task from '@/apiClients/tasks'
 import _ from 'underscore'
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
 import persons from '@/apiClients/persons'
@@ -119,11 +117,11 @@ export default {
       form: {
         title: '',
         notes: '',
-        date_hour: '',
+        dateHour: '',
         duration: '',
-        id_node: ''
+        idNode: ''
       },
-      optionsRols: [],
+      optionsNodes: [],
       personsSearched: [],
       personsSelected: [],
       searchPerson: ''
@@ -145,35 +143,15 @@ export default {
     node.getChildrens()
       .then((results) => {
         if (results) {
-          this.optionsNodes = _.map(results.data.message, (item) => {
+          this.optionsNodes.push({value: "", text: "Seleccione un Nodo o Estructura"})
+          this.optionsNodes = this.optionsNodes.concat(_.map(results.data.message, (item) => {
             return {
               value: item.id,
               text: item.name + (item.description !== '' ? ' - ' + item.description.substr(0, 25) : '')
             }
-          })
+          }))
         }
-        if (this.$route.query.taskId) {
-          tasks
-            .getById(this.$route.query.taskId)
-            .then((result) => {
-              loader.hide()
-              let task = result.data.message
-              this.form = {
-                title: task.title,
-                notes: task.notes,
-                date_hour: task.date_hour,
-                duration: task.duration,
-                id_node: task.id_node
-              }
-
-              // this.personsSelected
-            }).catch((err) => {
-              loader.hide()
-              this.getErrorMessage(err)
-            })
-        } else {
-          loader.hide()
-        }
+        loader.hide()
       }).catch((err) => {
         loader.hide()
         this.getErrorMessage(err)
@@ -200,20 +178,18 @@ export default {
           this.personsSearched = (result.status === 200)
             ? result.data.result
             : []
-        })
+        }).catch(this.getErrorMessage)
     },
     selectPerson (value) {
       this.personsSelected.push(value)
       this.searchPerson = ''
     },
-    submit (id) {
-      let params = {}
-      if (id) {
-        params.id = id
-      }
-
-      tasks.post(_.extend(this.form, params))
+    submit () {
+    var loader = this.$loading.show()
+console.log(this.form)
+      task.post(this.form)
         .then((result) => {
+          loader.hide()
           console.log(result)
           if (result.status === 201) {
             this.$notify({
@@ -221,46 +197,37 @@ export default {
               title: 'Ok!',
               text: result.data.message,
               type: 'success'
-              // position: 'bottom right'
             })
-            this.onReset()
-            // this.showAlertSuccess()
-          } else {
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: result.data.message,
-              type: 'error'
-            })
-          }
+            this.onReset()          }
         }).catch((error) => {
-          // console.log(error)
-          this.errorMessage = error.response.data.msg
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.response.data.msg,
-            type: 'error'
-          })
-          // this.logout()
+          loader.hide()
+          this.getErrorMessage(error)
         })
     },
     onReset () {
       this.form = {
         title: '',
         notes: '',
-        date_hour: '',
+        dateHour: '',
         duration: '',
-        id_node: ''
-      }
-
-      if (this.$route.query.taskId) {
-        this.$route.push('/tasks')
+        idNode: ''
       }
     },
-    setError (input) {
-
-    }
+    getErrorMessage (result) {
+      formatResponse(result, (err) => {
+        if (err === 'logout') {
+          this.logout()
+        } else {
+          this.$notify({
+            group: 'error',
+            title: 'Ops!',
+            text: err,
+            type: 'error',
+            position: 'bottom right'
+          })
+        }
+      })
+    },
   }
 }
 </script>

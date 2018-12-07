@@ -24,6 +24,8 @@ Vue.use(VueGoogleMaps, {
   }
 })
 
+
+
 Vue.config.productionTip = process.env.NODE_ENV === '"production"'
 
 Vue.component('icon', Icon)

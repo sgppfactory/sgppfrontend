@@ -75,8 +75,8 @@
                       :center="{lat:-34.097695, lng:-59.030265}"
                       :zoom="14"
                       map-type-id="terrain"
-                      style="width: 100%; height: 300px"
-            ></gmap-map>
+                      style="width: 100%; height: 300px">
+            </gmap-map>
 
           </b-col>
         </b-row>

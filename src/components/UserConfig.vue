@@ -95,6 +95,7 @@ import user from '@/apiClients/auth'
 import Menu from '@/components/Menu'
 import {formatResponse} from '@/utils/tools.js'
 import GmapsAutocomplete from '@/components/GmapsAutocomplete'
+import _ from 'underscore'
 
 export default {
   name: 'Login',
@@ -107,6 +108,7 @@ export default {
       title: 'Configuración de usuario',
       errorMessage: '',
       locationSelected: {},
+      marker: {},
       form: {
         password: '',
         rePassword: '',
@@ -194,7 +196,11 @@ export default {
         if (lat && lng) {
           this.$refs.mapRef.$mapCreated.then((map) => {
             const position = new google.maps.LatLng(lat, lng)
-            const marker = new google.maps.Marker({ 
+            // si tiene marcador en el mapa, se lo saco y hago uno nuevo
+            if (!_.isEmpty(this.marker)) {
+              this.marker.setMap(null)
+            }
+            this.marker = new google.maps.Marker({ 
               position,
               map
             })

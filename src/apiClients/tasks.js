@@ -8,6 +8,6 @@ export default {
     return basicClient('/tasks/' + id, 'GET')
   },
   post: function (params) {
-    return basicClient('/person', 'POST', params)
+    return basicClient('/tasks', 'POST', params)
   }
 }

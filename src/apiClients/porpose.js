@@ -36,9 +36,13 @@ export default {
       reject('Faltan parámetros en la consulta')
     })
   },
-  changeState: function (id, state) {
+  changeState: function (id, state, advanceProject) {
     if (id && state) {
-      return basicClient('/porpose/' + id + '/state', 'PUT', {state: state})
+      var params = {state: state}
+      if (advanceProject) {
+        params.advance = advanceProject
+      }
+      return basicClient('/porpose/' + id + '/state', 'PUT', params)
     }
     return new Promise((resolve, reject) => {
       reject('Faltan parámetros en la consulta')
