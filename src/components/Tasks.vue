@@ -13,169 +13,34 @@
         </b-col>
       </b-row>
       <b-row class="">
-        <full-calendar 
+        <calendar 
           ref="calendar" 
-          :event-sources="eventSources" 
-          @event-selected="eventSelected" 
-          @event-created="eventCreated" 
           :config="config">    
-        </full-calendar>
+        </calendar>
       </b-row>
-      <notifications group="success" />
-      <notifications group="error" />
     </b-container>
-    <b-modal id="viewDetails" v-model="show" title="Detalle de Tarea">
-      <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
-      <!-- <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="deleteTask()">
-         Eliminar
-       </b-btn>
-       <b-btn size="sm" variant="primary" @click="show=false">
-         Cancelar
-       </b-btn>
-     </div> -->
-    </b-modal>
   </div>
 </template>
 
 <script>
-// import moment from 'moment';
-import tasks from '../apiClients/tasks'
 import Menu from '@/components/Menu'
-import { FullCalendar } from 'vue-full-calendar'
-import 'fullcalendar/dist/fullcalendar.css'
-import 'fullcalendar/dist/locale/es'
+import Calendar from '@/components/Task'
 
 export default {
   name: 'Tasks',
   components: {
     'app-menu': Menu,
-    FullCalendar
+    Calendar
   },
   data () {
     return {
       title: 'Agenda',
-      cantResults: 1,
-      show: false,
-      events: [
-        // {
-        //   id: 1,
-        //   title: 'event1',
-        //   start: moment().hours(12).minutes(0),
-        // },
-        // {
-        //   id: 2,
-        //   title: 'event2',
-        //   start: moment().add(-1, 'days'),
-        //   end: moment().add(1, 'days'),
-        //   allDay: true,
-        // }
-        // {
-        //   id: 3,
-        //   title: 'event3',
-        //   start: moment().add(2, 'days'),
-        //   end: moment().add(2, 'days').add(6, 'hours'),
-        //   allDay: false,
-        // },
-      ],
-
       config: {
-        eventClick: (event) => {
-          this.selected = event
-        },
         locale: 'es'
-      },
-      selected: {}
+      }
     }
   },
   methods: {
-    logout () {
-      localStorage.jwt = ''
-      this.$router.push('login')
-    },
-    refreshEvents () {
-      this.$refs.calendar.$emit('refetch-events')
-    },
-
-    // removeEvent() {
-    //   this.$refs.calendar.$emit('remove-event', this.selected);
-    //   this.selected = {};
-    // },
-
-    eventSelected (event) {
-      var loader = this.$loading.show()
-      this.selected = event
-      tasks.get(event)
-        .then((result) => {
-          loader.hide()
-          console.log(result)
-          if (result.status === 200) {
-            this.toRemove = 0
-          } else {
-
-          }
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
-    },
-    eventCreated (...args) {
-    // eventCreated (/**/) {
-      console.log(args)
-    },
-    getErrorMessage (result) {
-      let message = ''
-      if (result.status === 404 || result.status === 500) {
-        message = 'Error al procesar la petición, vuelva a intentarlo nuevamente más tarde'
-      } else if (result.status === 401) {
-        this.logout()
-      } else {
-        message = result.data.message
-      }
-
-      this.$notify({
-        group: 'error',
-        title: 'Ops!',
-        text: message,
-        type: 'error',
-        position: 'bottom right'
-      })
-    }
-  },
-  computed: {
-    eventSources () {
-      const self = this
-      return [
-        {
-          events (start, end, timezone, callback) {
-            setTimeout(() => {
-              callback(self.events.filter(() => Math.random() > 0.5))
-            }, 1000)
-          }
-        },
-        {
-          events (start, end, timezone, callback) {
-            var loader = self.$loading.show()
-            let params = {start: start, end: end}
-            tasks.getFilter(params)
-              .then((response) => {
-                console.log(response.data)
-                self.cantResults = response.data.total
-                if (response.status === 200) {
-                  callback(response.data.result)
-                }
-                loader.hide()
-              }).catch(err => {
-                loader.hide()
-                self.getErrorMessage(err)
-              })
-            // self.$http.get(`/anotherFeed`, {timezone: self.timezone}).then(response => {
-            // })
-          },
-          color: 'red'
-        }
-      ]
-    }
   }
 }
 </script>
@@ -199,13 +64,4 @@ a:not(.btn) {
   color: #42b983;
   cursor: pointer;
 }
-.fc.fc-unthemed.fc-ltr {
-  margin: 15px;
-}
-/*.form-inline {
-  margin-bottom: 20px;
-}
-.form-inline-right {
-  margin-left: 55%;
-}*/
 </style>

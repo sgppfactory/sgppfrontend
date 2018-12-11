@@ -24,10 +24,6 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <!-- We use click.stop here to prevent 'sort-changed' or 'head-clicked' events -->
-          <!-- <input @click.stop type="checkbox" :value="foo.column" v-model="selected"> -->
-          <!-- We use click.native.stop here to prevent 'sort-changed' or 'head-clicked' events -->
-          <!-- <b-form-checkbox @click.native.stop :value="foo.column" v-model="selected" /> -->
           <router-link :to="{ name: 'showreport', params: { report: row.item.id }}" v-b-tooltip.hover title="Ver reporte"> 
             <icon name="info" />
           </router-link>
@@ -46,7 +42,7 @@
       <notifications group="success" />
       <notifications group="error" />
     </b-container>
-    <b-modal id="deleteModal" v-model="show" title="Eliminar Persona">
+    <b-modal id="deleteModal" v-model="show" title="Eliminar Reporte">
       <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
       <div slot="modal-footer" class="w-100 text-right">
        <b-btn size="sm" variant="danger" @click="deletereport()">
@@ -101,6 +97,8 @@ export default {
       this.$router.push('login')
     },
     search (page) {
+      var loader = this.$loading.show()
+
       var params = this.searchParam ? {
         filter: [
           {key: 'title', value: this.searchParam, operator: 'like', operator_sup: 'OR'}
@@ -113,18 +111,24 @@ export default {
 
       reports.getFilter(params)
         .then((result) => {
+          loader.hide()
           this.reports = (result.status === 200)
           ? result.data.result
           : []
 
           this.cantPages = result.data.pages
           this.cantResults = result.data.total
-        }).catch(this.getErrorMessage)
+        }).catch(err => {
+          loader.hide()
+          this.getErrorMessage(err)
+        })
     },
     deletereport () {
+      var loader = this.$loading.show()
+
       reports.remove(this.toRemove)
         .then((result) => {
-          // console.log(result)
+          loader.hide()
           if (result.status === 200) {
             this.toRemove = 0
             this.show = false
@@ -132,12 +136,14 @@ export default {
               group: 'success',
               title: 'Ok!',
               text: result.data.message,
-              type: 'success',
-              position: 'bottom right'
+              type: 'success'
             })
             this.search()
           }
-        }).catch(this.getErrorMessage)
+        }).catch(err => {
+          loader.hide()
+          this.getErrorMessage(err)
+        })
     },
     showDetails (id) {
       reports.get(id)

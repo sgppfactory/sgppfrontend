@@ -26,12 +26,10 @@
             </b-col>
           </b-row>
           <!-- </div> -->
-
-          <full-calendar 
+          <calendar 
             ref="calendar" 
-            :config="config"
-            :events="events">    
-          </full-calendar>
+            :config="config">    
+          </calendar>
         </b-col>
         <b-col sm="5">
           <ul class="list-unstyled ml-4">
@@ -52,15 +50,13 @@ import Menu from '@/components/Menu'
 import implementation from '@/apiClients/implementation'
 import user from '@/apiClients/auth'
 import porpose from '@/apiClients/porpose'
-import { FullCalendar } from 'vue-full-calendar'
-import 'fullcalendar/dist/fullcalendar.css'
-import 'fullcalendar/dist/locale/es'
+import Calendar from '@/components/Task'
 
 export default {
   name: 'Home',
   components: {
     'app-menu': Menu,
-    FullCalendar
+    Calendar
   },
   data () {
     return {
@@ -76,11 +72,6 @@ export default {
         },
         locale: 'es',
         defaultView: 'listWeek',
-        // views: {
-        //   listDay: { buttonText: 'list day' },
-        //   listWeek: { buttonText: 'list week' },
-        //   listMonth: { buttonText: 'list month' }
-        // },
         header: {
           left: '',
           center: 'title',
@@ -120,7 +111,7 @@ export default {
     implementation.get()
       .then((result) => {
         if (result.status === 200) {
-          let implData = JSON.parse(result.data.message)
+          let implData = result.data.message
           if (implData) {
             this.msg = this.msg + implData.name + '?'
           } else {

@@ -7,56 +7,60 @@
       <b-form @submit="update" @reset="resetForm">
         <b-row>
           <b-col>
-            <h3>Cambiar contraseña</h3>
-            <b-form-group label="Modifique su contraseña:" label-for="password">
-              <b-form-input id="password" 
-                            type="password" 
-                            v-model.trim="form.password" 
-                            placeholder="Modificar Contraseña" 
-                            v-bind:class="formClass">
-              </b-form-input>
-            </b-form-group>
-            <b-form-group label="Confirme su nueva contraseña:" label-for="repassword">
-              <b-form-input id="repassword" 
-                            type="password" 
-                            v-model.trim="form.rePassword" 
-                            placeholder="Confirmar nueva contraseña" 
-                            v-bind:class="formClass">
-              </b-form-input>
-            </b-form-group>
-            <h3>Datos personales</h3>
-            <b-form-group label="E-mail:" label-for="email">
-              <b-form-input id="email" 
-                            type="email" 
-                            v-model.trim="form.email" 
-                            placeholder="Modificar email" 
-                            v-bind:class="formClass">
-              </b-form-input>
-            </b-form-group>
-            <b-form-group label="Celular:" label-for="cel">
-              <b-form-input id="cel" 
-                            type="text" 
-                            v-model.trim="form.cel" 
-                            placeholder="Agregar teléfono móvil" 
-                            v-bind:class="formClass">
-              </b-form-input>
-            </b-form-group>
-            <b-form-group label="Teléfono:" label-for="phone">
-              <b-form-input id="phone" 
-                            type="text" 
-                            v-model.trim="form.phone" 
-                            placeholder="Agregar teléfono fijo" 
-                            v-bind:class="formClass">
-              </b-form-input>
-            </b-form-group>
-            <b-form-group label="Fecha de nacimiento:" label-for="location">
-              <b-form-input id="date_birth" 
-                            type="date" 
-                            v-model.trim="form.date_birth" 
-                            placeholder="Agregar fecha nacimiento" 
-                            v-bind:class="formClass">
-              </b-form-input>
-            </b-form-group>
+            <b-card>
+              <h4>Cambiar contraseña</h4>
+              <b-form-group label="Modifique su contraseña:" label-for="password">
+                <b-form-input id="password" 
+                              type="password" 
+                              v-model.trim="form.password" 
+                              placeholder="Modificar Contraseña" 
+                              v-bind:class="formClass">
+                </b-form-input>
+              </b-form-group>
+              <b-form-group label="Confirme su nueva contraseña:" label-for="repassword">
+                <b-form-input id="repassword" 
+                              type="password" 
+                              v-model.trim="form.rePassword" 
+                              placeholder="Confirmar nueva contraseña" 
+                              v-bind:class="formClass">
+                </b-form-input>
+              </b-form-group>
+            </b-card>
+            <b-card class="personal-data">
+              <h4>Datos personales</h4>
+              <b-form-group label="E-mail:" label-for="email">
+                <b-form-input id="email" 
+                              type="email" 
+                              v-model.trim="form.email" 
+                              placeholder="Modificar email" 
+                              v-bind:class="formClass">
+                </b-form-input>
+              </b-form-group>
+              <b-form-group label="Celular:" label-for="cel">
+                <b-form-input id="cel" 
+                              type="text" 
+                              v-model.trim="form.cel" 
+                              placeholder="Agregar teléfono móvil" 
+                              v-bind:class="formClass">
+                </b-form-input>
+              </b-form-group>
+              <b-form-group label="Teléfono:" label-for="phone">
+                <b-form-input id="phone" 
+                              type="text" 
+                              v-model.trim="form.phone" 
+                              placeholder="Agregar teléfono fijo" 
+                              v-bind:class="formClass">
+                </b-form-input>
+              </b-form-group>
+              <b-form-group label="Fecha de nacimiento:" label-for="location">
+                <b-form-input id="date_birth" 
+                              type="date" 
+                              v-model.trim="form.date_birth" 
+                              placeholder="Agregar fecha nacimiento" 
+                              v-bind:class="formClass">
+                </b-form-input>
+              </b-form-group>
+            </b-card>
           </b-col>
           <b-col>
             <b-form-group label="Ubicación o domicilio:" label-for="location">
@@ -69,16 +73,17 @@
                                     @placechanged="setPlace">
               </gmaps-autocomplete>
             </b-form-group>
-
             <gmap-map ref="mapRef"
                       :center="{lat:-34.097695, lng:-59.030265}"
                       :zoom="14"
                       map-type-id="terrain"
-                      style="width: 100%; height: 300px"
+                      style="width: 100%; height: 200px"
             ></gmap-map>
-
-            <b-table striped hover :items="logins" :fields="fields">
-            </b-table>
+            <b-card class="last-login">
+              <h4>Últimos Ingresos</h4>
+              <b-table striped hover :items="logins" :fields="fields">
+              </b-table>
+            </b-card>
           </b-col>
         </b-row>
         <b-button type="submit" variant="primary">Modificar</b-button>
@@ -135,16 +140,49 @@ export default {
   },
   created () {
     var loader = this.$loading.show()
-    user.getLogUser()
-      .then((response) => {
-        loader.hide()
-        if (response.data) {
-          this.logins = response.data.message
-        }
-      }).catch((error) => {
+    user.getUser()
+      .then(responseUser => {
+        console.log(responseUser.data)
+        if (response.status === 200) {
+          // var userData = responseUser.data.message
+          user.getUserPerson()
+            .then(responsePerson => {
+              loader.hide()
+              console.log(responsePerson.data)
+              if (response.status === 200) {
+                this.logins = _.map(response.data.message, item => {
+                  let date = new Date(item.dateHour)
+                  return {
+                    ip: item.ip,
+                    dateHour: date.toLocaleString("es-AR")
+                  }
+                })
+              }
+            }).catch(error => {
+              loader.hide()
+              this.getErrorMessage(error)
+            })
+          }
+      }).catch(error => {
         loader.hide()
         this.getErrorMessage(error)
       })
+      user.getLogUser()
+        .then(response => {
+          loader.hide()
+          if (response.status === 200) {
+            this.logins = _.map(response.data.message, item => {
+              let date = new Date(item.dateHour)
+              return {
+                ip: item.ip,
+                dateHour: date.toLocaleString('es-AR')
+              }
+            })
+          }
+        }).catch(error => {
+          loader.hide()
+          this.getErrorMessage(error)
+        })
   },
   computed: {
     formClass: function () {
@@ -159,10 +197,15 @@ export default {
       evt.preventDefault()
       user.update(this.form)
         .then((response) => {
-          loader.hide()
-          if (response) {
-
+          if (response.status === 200) {
+            this.$notify({
+              group: 'success',
+              title: 'Ok!',
+              text: response.data.message,
+              type: 'success'
+            })
           }
+          loader.hide()
         }).catch((error) => {
           loader.hide()
           this.getErrorMessage(error)
@@ -200,6 +243,7 @@ export default {
             if (!_.isEmpty(this.marker)) {
               this.marker.setMap(null)
             }
+
             this.marker = new google.maps.Marker({ 
               position,
               map
@@ -225,5 +269,11 @@ export default {
   li {
     display: inline-block;
     margin: 0 10px;
+  }
+  .personal-data {
+    margin-top: 10px;
+  }
+  .last-login {
+    margin-top: 5px;
   }
 </style>

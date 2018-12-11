@@ -19,7 +19,7 @@
             </b-form-group>
             <b-form-group label="Fecha y Hora:" label-for="dateHour">
               <b-form-input id="dateHour"
-                            type="date"
+                            type="datetime-local"
                             v-model.trim="form.dateHour"
                             required
                             placeholder="Ingrese fecha y hora del comienzo de la tarea"
@@ -31,10 +31,8 @@
               <b-form-input id="duration"
                             type="text"
                             v-model.trim="form.duration"
-                            required
                             placeholder="Estime la duración del evento"
-                            v-b-tooltip.click.blur.rightbottom 
-                            title="Campo requerido">
+                            title="La duración de la tarea, puede ser expresada en el formato hh:mm, pero a su vez, se puede denotar con una 'h' para las horas y 'm' para los minutos, ejemplo: 2h10m.">
               </b-form-input>
             </b-form-group>
             <b-form-group label="Persona/s relacionada/s:" label-for="persons">
@@ -84,11 +82,11 @@
 
 <script>
 import 'vue-awesome/icons'
-import tasks from '@/apiClients/tasks'
 import Menu from '@/components/Menu'
 import node from '@/apiClients/node'
 import task from '@/apiClients/tasks'
 import _ from 'underscore'
+import {formatResponse} from '../utils/tools.js'
 import VueBootstrapTypeahead from 'vue-bootstrap-typeahead'
 import persons from '@/apiClients/persons'
 
@@ -143,7 +141,7 @@ export default {
     node.getChildrens()
       .then((results) => {
         if (results) {
-          this.optionsNodes.push({value: "", text: "Seleccione un Nodo o Estructura"})
+          this.optionsNodes.push({value: '', text: 'Seleccione un Nodo o Estructura'})
           this.optionsNodes = this.optionsNodes.concat(_.map(results.data.message, (item) => {
             return {
               value: item.id,
@@ -156,6 +154,10 @@ export default {
         loader.hide()
         this.getErrorMessage(err)
       })
+  },
+  mounted () {
+    document.getElementById('dateHour')
+      .setAttribute('min', new Date())
   },
   methods: {
     logout () {
@@ -185,12 +187,32 @@ export default {
       this.searchPerson = ''
     },
     submit () {
-    var loader = this.$loading.show()
-console.log(this.form)
+      var loader = this.$loading.show()
+      var params = _.clone(this.form)
+      let durationToParse = params.duration
+      if (durationToParse.indexOf('h') > -1) {
+        let hour = durationToParse.split('h')
+        let minutes = '00'
+        if (durationToParse.indexOf('m') > -1) {
+          minutes = parseInt(hour[1].replace('m', ''))
+        }
+        hour = parseInt(hour[0])
+
+        this.form.duration = hour + ':' + minutes
+      } else if (durationToParse.indexOf(':') === -1 && durationToParse.indexOf('m') > -1) {
+        let hour = Math.floor(parseInt(durationToParse) / 60)
+        let minutes = Math.round((parseInt(durationToParse) % 60) * 60)
+
+        this.form.duration = hour + ':' + minutes
+      }
+
+      params.persons = _.map(this.personsSelected, (pers) => {
+        return pers.id
+      })
+
       task.post(this.form)
         .then((result) => {
           loader.hide()
-          console.log(result)
           if (result.status === 201) {
             this.$notify({
               group: 'success',
@@ -198,7 +220,8 @@ console.log(this.form)
               text: result.data.message,
               type: 'success'
             })
-            this.onReset()          }
+            this.onReset()
+          }
         }).catch((error) => {
           loader.hide()
           this.getErrorMessage(error)
@@ -227,7 +250,7 @@ console.log(this.form)
           })
         }
       })
-    },
+    }
   }
 }
 </script>

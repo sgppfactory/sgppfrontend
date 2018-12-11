@@ -4,8 +4,8 @@
     <b-breadcrumb :items="bread"/>
     <b-container>
       <h1>{{title}}</h1>
-      <b-form @submit="submit" @reset="onReset">
-        <b-row>
+      <b-row>
+        <b-form @submit="submit" @reset="onReset">
           <b-col>
             <b-form-group label="Nombres:" label-for="name">
               <b-form-input id="name"
@@ -19,12 +19,25 @@
             </b-form-group>
           </b-col>
           <b-col>
-
+            <b-button type="submit" variant="primary">Crear</b-button>
+            <b-button type="reset" variant="danger">Limpiar</b-button>
           </b-col>
-        </b-row>
-        <b-button type="submit" variant="primary">Crear</b-button>
-        <b-button type="reset" variant="danger">Limpiar</b-button>
-      </b-form>
+        </b-form>
+      </b-row>
+      <b-row>
+        <b-col>
+          <b-form-group label="Nombres:" label-for="name">
+            <b-form-input id="name"
+                          type="text"
+                          v-model.trim="form.name"
+                          required
+                          placeholder="Ingrese el nombre"
+                          v-b-tooltip.click.blur.rightbottom 
+                          title="Campo requerido">
+            </b-form-input>
+          </b-form-group>
+        </b-col>
+      </b-row>
     </b-container>
     <notifications group="success" />
     <notifications group="error" />
@@ -37,6 +50,7 @@ import reports from '@/apiClients/reports'
 import Menu from '@/components/Menu'
 import _ from 'underscore'
 import {formatResponse} from '@/utils/tools.js'
+import HighchartsVue from 'highcharts-vue'
 
 export default {
   name: 'AddReport',
@@ -63,6 +77,7 @@ export default {
         entity: '',
         filterBy: ''
       },
+      toUpdate: 0,
       optionsEntities: []
     }
   },
@@ -77,24 +92,27 @@ export default {
     }
   },
   created () {
-    var loader = this.$loading.show()
+    if (this.$route.query.reportId) {
+      var loader = this.$loading.show()
+      reports.findById(this.$route.query.reportId)
+        .then((result) => {
+          if (result.status === 200) {
 
-    reports.get()
-      .then((reports) => {
-        if (reports) {
-          // reports = reports.data.message
-          // this.optionsRols = _.map(rolData, (item) => {
-          //   return {
-          //     value: item.id,
-          //     text: item.name
-          //   }
-          // })
-        }
-        loader.hide()
-      }).catch((err) => {
-        loader.hide()
-        this.getErrorMessage(err)
-      })
+            this.toUpdate = this.$route.query.porposeId
+            // reports = reports.data.message
+            // this.optionsRols = _.map(rolData, (item) => {
+            //   return {
+            //     value: item.id,
+            //     text: item.name
+            //   }
+            // })
+          }
+          loader.hide()
+        }).catch((err) => {
+          loader.hide()
+          this.getErrorMessage(err)
+        })
+    }
   },
   methods: {
     logout () {
@@ -102,43 +120,35 @@ export default {
       this.$router.push('login')
     },
     submit (id) {
-      let params = {}
-      if (id) {
-        params.id = id
-      }
+      var loader = this.$loading.show()
+      let params = _.clone(this.form)
 
-      reports.post(_.extend(this.form, params))
-        .then((result) => {
-          console.log(result)
-          if (result.status === 201) {
-            this.$notify({
-              group: 'success',
-              title: 'Ok!',
-              text: result.data.message,
-              type: 'success'
-              // position: 'bottom right'
-            })
-            this.onReset()
-            // this.showAlertSuccess()
-          } else {
-            this.$notify({
-              group: 'error',
-              title: 'Ops!',
-              text: result.data.message,
-              type: 'error'
-            })
-          }
-        }).catch((error) => {
-          // console.log(error)
-          this.errorMessage = error.response.data.msg
-          this.$notify({
-            group: 'error',
-            title: 'Ops!',
-            text: error.response.data.msg,
-            type: 'error'
+      if (this.toUpdate) {
+        reports.update(this.toUpdate, params)
+          .then((result) => {
+            if (result.status === 200) {
+              this.getSuccessMessage(result)
+            }
+            loader.hide()
+            this.$route.push('reports')
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
           })
-          // this.logout()
-        })
+      } else {
+        reports.post(_.extend(this.form, params))
+          .then((result) => {
+            loader.hide()
+            if (result.status === 201) {
+              this.getSuccessMessage(result)
+              this.onReset()
+            }
+          }).catch((error) => {
+            loader.hide()
+            // console.log(error)
+            this.getErrorMessage(error)
+          })
+      }
     },
     onReset () {
       this.form = {
@@ -152,8 +162,13 @@ export default {
         rol: ''
       }
     },
-    setError (input) {
-
+    getSuccessMessage (msg) {
+      this.$notify({
+        group: 'success',
+        title: 'Ok!',
+        text: msg.data.message,
+        type: 'success'
+      })
     },
     getErrorMessage (result) {
       formatResponse(result, (err) => {

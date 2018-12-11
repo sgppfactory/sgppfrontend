@@ -52,7 +52,7 @@ export default {
     menu.get()
       .then((result) => {
         if (result.status === 200) {
-          let actions = JSON.parse(result.data.result)
+          let actions = result.data.result
           this.menu = _.filter(actions, (item) => {
             return item.level === 1 && item.menu
           })
@@ -72,7 +72,7 @@ export default {
     auth.getUser()
       .then((result) => {
         if (result.status === 200) {
-          let userData = JSON.parse(result.data.result)
+          let userData = result.data.result
           if (userData.username) {
             this.username = userData.username
           }
@@ -86,7 +86,7 @@ export default {
     implementation.get()
       .then((result) => {
         if (result.status === 200) {
-          let implData = JSON.parse(result.data.message)
+          let implData = result.data.message
           if (implData.logo) {
             this.logoImg = implData.logo
             this.logoStr = implData.name

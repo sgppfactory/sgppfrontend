@@ -229,22 +229,22 @@ export default {
       advanceProjectsDetails: [],
       advanceHeaders: [
         {
-          label: 'Porcentaje', 
+          label: 'Porcentaje',
           key: 'percent',
           formatter: (value) => {
             return value + '%'
           }
         },
         {
-          label: 'Monto gastado', 
+          label: 'Monto gastado',
           key: 'amount',
           formatter: (value) => {
-            return  value ? '$ ' + value : ''
+            return value ? '$ ' + value : ''
           }
         },
         {label: 'Notas', key: 'notes'},
         {
-          label: 'Fecha', 
+          label: 'Fecha',
           key: 'created_at',
           formatter: (value) => {
             if (value) {
@@ -296,7 +296,7 @@ export default {
       // Propuesta: Dar de baja la propuesta y Avanzar de Etapa
       // Proyecto: Dar de baja el proyecto, Notificar avance y Finalizar Proyecto
       if (type === 1) {
-      //Es igual a propuesta
+      // Es igual a propuesta
         this.optionsNodes = [
           {text: 'Seleccione una opción', value: ''},
           {text: 'Avanzar de Etapa', value: 'advance'},
@@ -344,7 +344,7 @@ export default {
             ? _.map(
                 result.data.result,
                 (porpose) => {
-                  return porpose.type === 2 ? _.extend(porpose, { _rowVariant : 'success' }) : porpose
+                  return porpose.type === 2 ? _.extend(porpose, {_rowVariant : 'success' }) : porpose
                 }
               )
             : []
@@ -358,9 +358,9 @@ export default {
     },
     showDetails (row) {
       // Necesito eliminar todas las filas antes de abrir otra...
-      var elementsToRemove = document.getElementsByClassName('b-table-details');
-      while(elementsToRemove.length > 0){
-          elementsToRemove[0].parentNode.removeChild(elementsToRemove[0]);
+      var elementsToRemove = document.getElementsByClassName('b-table-details')
+      while (elementsToRemove.length > 0) {
+        elementsToRemove[0].parentNode.removeChild(elementsToRemove[0])
       }
       if (!row.detailsShowing) {
         var loader = this.$loading.show()
@@ -371,7 +371,7 @@ export default {
             if (result.status === 200) {
               var porpose = result.data.message
               var date = new Date(porpose.created_at)
-              var localeString = date.toLocaleString("es-AR");
+              var localeString = date.toLocaleString('es-AR')
               var place = JSON.parse(porpose.location)
               var lat = place.lat
               var lng = place.lng
@@ -413,7 +413,7 @@ export default {
                     self.marker.setMap(null)
                   }
 
-                  self.marker = new google.maps.Marker({ 
+                  self.marker = new google.maps.Marker({
                     position,
                     map
                   })
@@ -474,10 +474,10 @@ export default {
         position: 'bottom right'
       })
     },
-    changePaginationAdvances (page) {
+    // changePaginationAdvances (page) {
 
-    },
-    toggleRow(row) {
+    // },
+    toggleRow (row) {
       row.toggleDetails()
     }
   }
