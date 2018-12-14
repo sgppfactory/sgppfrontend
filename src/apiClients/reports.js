@@ -9,5 +9,11 @@ export default {
   },
   findById: function (id) {
     return basicClient('/reports/' + id, 'GET')
+  },
+  findCicles: function () {
+    return basicClient('/cicles', 'GET')
+  },
+  generate: function (params) {
+    return basicClient('/reports/try', 'GET', params)
   }
 }

@@ -87,9 +87,9 @@
                 <b-form-checkbox v-model="form.withuser" value="true">Crear usuario</b-form-checkbox>
               <!-- </b-form-checkbox-group> -->
             </b-form-group>
-          </b-col>
-          <b-col v-if="form.withuser">
-            <b-form-group label="Perfil de usuario:" label-for="rols">
+<!--           </b-col>
+          <b-col v-if="form.withuser"> -->
+            <b-form-group v-if="form.withuser" label="Perfil de usuario:" label-for="rols">
               <b-form-select id="rols"
                             v-model="form.rol"
                             placeholder="Seleccionar un perfil de usuario"

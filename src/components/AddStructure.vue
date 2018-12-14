@@ -56,11 +56,8 @@
                 </b-form-group>
               </b-col>
             </b-row>
-              <!-- <b-col sm="3"> -->
             <b-button type="submit" variant="primary" :disabled="formApp.name.length === 0">Siguiente</b-button>
             <b-button type="reset" variant="danger">Limpiar</b-button>
-              <!-- </b-col>
-            </b-row> -->
           </b-form>
         </div>
         <!-- NODES -->
