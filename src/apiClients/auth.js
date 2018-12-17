@@ -13,7 +13,13 @@ export default {
   getLogUser: function () {
     return basicClient('/user/log', 'GET')
   },
-  getUserPerson: function () {
+  getUserPerson: () => {
     return basicClient('/user/person', 'GET')
+  },
+  update: (params) => {
+    if (params) {
+      return basicClient('/user', 'PUT', params)
+    }
+    throw 'Parámetros incorrectos'
   }
 }

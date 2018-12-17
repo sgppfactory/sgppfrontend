@@ -59,7 +59,7 @@
 
 <script>
 import 'vue-awesome/icons'
-import reports from '../apiClients/reports'
+import reports from '@/apiClients/reports'
 import Menu from '@/components/Menu'
 export default {
   name: 'Persons',

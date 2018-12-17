@@ -4,7 +4,7 @@
     <b-breadcrumb :items="bread"/>
     <b-container>
       <h1>{{title}}</h1>
-      <b-form @submit="update" @reset="resetForm">
+      <b-form @submit="openModal" @reset="resetForm">
         <b-row>
           <b-col>
             <b-card>
@@ -44,18 +44,18 @@
                               v-bind:class="formClass">
                 </b-form-input>
               </b-form-group>
-              <b-form-group label="Teléfono:" label-for="phone">
-                <b-form-input id="phone" 
+              <b-form-group label="Teléfono:" label-for="tel">
+                <b-form-input id="tel" 
                               type="text" 
-                              v-model.trim="form.phone" 
+                              v-model.trim="form.tel" 
                               placeholder="Agregar teléfono fijo" 
                               v-bind:class="formClass">
                 </b-form-input>
               </b-form-group>
-              <b-form-group label="Fecha de nacimiento:" label-for="location">
-                <b-form-input id="date_birth" 
+              <b-form-group label="Fecha de nacimiento:" label-for="dateBirth">
+                <b-form-input id="dateBirth" 
                               type="date" 
-                              v-model.trim="form.date_birth" 
+                              v-model.trim="form.dateBirth" 
                               placeholder="Agregar fecha nacimiento" 
                               v-bind:class="formClass">
                 </b-form-input>
@@ -66,9 +66,9 @@
             <b-form-group label="Ubicación o domicilio:" label-for="location">
               <gmaps-autocomplete   id="location"
                                     ref="gmapAutocomplete"
-                                    v-model="form.location"
-                                    placeholder="Ingresar un domicilio o ubicación"
+                                    placeholder="Ingresar una ubicación"
                                     country="ar"
+                                    :defaultValue="form.location"
                                     :geolocationOptions="{lat:-34.097695, lng:-59.030265}"
                                     @placechanged="setPlace">
               </gmaps-autocomplete>
@@ -77,8 +77,8 @@
                       :center="{lat:-34.097695, lng:-59.030265}"
                       :zoom="14"
                       map-type-id="terrain"
-                      style="width: 100%; height: 200px"
-            ></gmap-map>
+                      style="width: 100%; height: 200px">
+            </gmap-map>
             <b-card class="last-login">
               <h4>Últimos Ingresos</h4>
               <b-table striped hover :items="logins" :fields="fields">
@@ -90,6 +90,22 @@
         <b-button type="reset" variant="danger">Cancelar</b-button>
       </b-form>
     </b-container>
+    <b-modal id="confirmPassModal" v-model="showConfirmPass" title="Cambios en datos personales">
+      <p class="my-2">Confirme los cambios en sus datos personales</p>
+      <b-form-input id="passConfirmation" 
+                    type="password" 
+                    v-model.trim="form.passConfirmation" 
+                    placeholder="Confirmar Contraseña">
+      </b-form-input>
+      <div slot="modal-footer" class="w-100 text-right">
+       <b-btn size="sm" variant="danger" @click="update">
+         Confirmar
+       </b-btn>
+       <b-btn size="sm" variant="primary" @click="showConfirmPass=false">
+         Cancelar
+       </b-btn>
+     </div>
+    </b-modal>
     <notifications group="success" />
     <notifications group="error" />
   </div>
@@ -120,8 +136,8 @@ export default {
         location: '',
         email: '',
         cel: '',
-        phone: '',
-        date_birth: '',
+        tel: '',
+        dateBirth: '',
         passConfirmation: ''
       },
       bread: [{
@@ -132,6 +148,7 @@ export default {
         active: true
       }],
       logins: [],
+      showConfirmPass: false,
       fields: [
         {label: 'IP', key: 'ip'},
         {label: 'Fecha', key: 'dateHour'}
@@ -140,49 +157,41 @@ export default {
   },
   created () {
     var loader = this.$loading.show()
-    user.getUser()
-      .then(responseUser => {
-        console.log(responseUser.data)
+
+    user.getUserPerson()
+      .then(responsePerson => {
+        loader.hide()
+        // console.log(responsePerson.data)
+        if (responsePerson.status === 200) {
+          let person = responsePerson.data.message
+          this.form.email = person.email
+          this.form.tel = person.tel
+          this.form.cel = person.cel
+          this.form.location = person.location
+          this.form.dateBirth = person.dateBirth
+        }
+      }).catch(error => {
+        console.log(error)
+        loader.hide()
+        this.getErrorMessage(error)
+      })
+
+    user.getLogUser()
+      .then(response => {
+        loader.hide()
         if (response.status === 200) {
-          // var userData = responseUser.data.message
-          user.getUserPerson()
-            .then(responsePerson => {
-              loader.hide()
-              console.log(responsePerson.data)
-              if (response.status === 200) {
-                this.logins = _.map(response.data.message, item => {
-                  let date = new Date(item.dateHour)
-                  return {
-                    ip: item.ip,
-                    dateHour: date.toLocaleString("es-AR")
-                  }
-                })
-              }
-            }).catch(error => {
-              loader.hide()
-              this.getErrorMessage(error)
-            })
-          }
+          this.logins = _.map(response.data.message, item => {
+            let date = new Date(item.dateHour)
+            return {
+              ip: item.ip,
+              dateHour: date.toLocaleString('es-AR')
+            }
+          })
+        }
       }).catch(error => {
         loader.hide()
         this.getErrorMessage(error)
       })
-      user.getLogUser()
-        .then(response => {
-          loader.hide()
-          if (response.status === 200) {
-            this.logins = _.map(response.data.message, item => {
-              let date = new Date(item.dateHour)
-              return {
-                ip: item.ip,
-                dateHour: date.toLocaleString('es-AR')
-              }
-            })
-          }
-        }).catch(error => {
-          loader.hide()
-          this.getErrorMessage(error)
-        })
   },
   computed: {
     formClass: function () {
@@ -193,23 +202,37 @@ export default {
   },
   methods: {
     update (evt) {
-      var loader = this.$loading.show()
       evt.preventDefault()
-      user.update(this.form)
-        .then((response) => {
-          if (response.status === 200) {
-            this.$notify({
-              group: 'success',
-              title: 'Ok!',
-              text: response.data.message,
-              type: 'success'
-            })
-          }
-          loader.hide()
-        }).catch((error) => {
-          loader.hide()
-          this.getErrorMessage(error)
+      if (!_.isEmpty(this.form.passConfirmation)) {
+        var loader = this.$loading.show()
+        user.update(this.form)
+          .then((response) => {
+            if (response.status === 200) {
+              this.$notify({
+                group: 'success',
+                title: 'Ok!',
+                text: response.data.message,
+                type: 'success'
+              })
+              this.showConfirmPass = false
+              this.form.passConfirmation = ''
+              this.form.password = ''
+              this.form.rePassword = ''
+            }
+            loader.hide()
+          }).catch((error) => {
+            loader.hide()
+            this.getErrorMessage(error)
+          })
+      } else {
+        this.$notify({
+          group: 'error',
+          title: 'Ops!',
+          text: 'Ingrese una contraseña para confirmar!',
+          type: 'error',
+          position: 'bottom right'
         })
+      }
     },
     getErrorMessage (result) {
       formatResponse(result, (err) => {
@@ -228,6 +251,14 @@ export default {
     },
     resetForm () {
       this.$router.push('/home')
+    },
+    logout () {
+      localStorage.jwt = ''
+      this.$router.push('login')
+    },
+    openModal () {
+      this.showConfirmPass = true
+      this.form.passConfirmation = ''
     },
     setPlace (place) {
       if (place) {

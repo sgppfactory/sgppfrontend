@@ -12,7 +12,15 @@ import Notifications from 'vue-notification'
 import json from '../credentials/data.json'
 import 'vue-loading-overlay/dist/vue-loading.min.css'
 import Loading from 'vue-loading-overlay'
+import HighchartsVue from 'highcharts-vue'
+import Highcharts from 'highcharts'
+import stockInit from 'highcharts/modules/stock'
+import exportingInit from 'highcharts/modules/exporting'
 
+exportingInit(Highcharts)
+stockInit(Highcharts)
+
+Vue.use(HighchartsVue)
 Vue.use(BootstrapVue)
 Vue.use(Notifications)
 Vue.use(Loading)

@@ -4,8 +4,8 @@ export default {
   getFilter: function (params) {
     return basicClient('/reports', 'GET', params)
   },
-  remove: function () {
-    return basicClient('/reports', 'DELETE')
+  remove: function (id) {
+    return basicClient('/reports/' + id, 'DELETE')
   },
   findById: function (id) {
     return basicClient('/reports/' + id, 'GET')
@@ -15,5 +15,8 @@ export default {
   },
   generate: function (params) {
     return basicClient('/reports/try', 'GET', params)
+  },
+  post: function (params) {
+    return basicClient('/reports', 'POST', params)
   }
 }

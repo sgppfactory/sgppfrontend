@@ -1,13 +1,14 @@
 <template>
-  <b-form-input   :id="id"
-                  ref="gmapAutocomplete"
-                  v-model.trim="autocompleteText"
-                  :placeholder="placeholder">
+  <b-form-input :id="id"
+                ref="gmapAutocomplete"
+                v-model.trim="autocompleteText"
+                :placeholder="placeholder">
   </b-form-input>
 </template>
 
 <script>
 import GoogleMapsLoader from 'google-maps'
+import _ from 'underscore'
 
 export default {
   name: 'GmapsAutocomplete',
@@ -46,25 +47,35 @@ export default {
     }
     var self = this
     GoogleMapsLoader.load(function(google) {
-      console.log(google)
+      // console.log(google)
       // new google.maps.Map(el, options);
       // TODO: Ver el tema del país por implementación
       if (google.maps) {
-        self.autocomplete = new google.maps.places.Autocomplete(
-          document.getElementById(self.id),
-          {types: ['geocode'], componentRestrictions: {country: self.country}}
-        )
+        try {
 
-        self.autocomplete.addListener('place_changed', self.onPlaceChanged)
+          self.autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById(self.id),
+            {types: ['geocode'], componentRestrictions: {country: self.country}}
+          )
 
-        var circle = new google.maps.Circle({
-          center: self.geolocationOptions,
-          radius: 2
-        })
-        console.log(circle)
-        self.autocomplete.setBounds(circle.getBounds())
+
+            console.log(self.autocomplete)
+          if (!_.isEmpty(self.geolocationOptions) && !_.isEmpty(self.autocomplete)) {
+            var circle = new google.maps.Circle({
+              center: self.geolocationOptions,
+              radius: 2
+            })
+            
+            self.autocomplete.setBounds(circle.getBounds())
+          }
+          self.autocomplete.addListener('place_changed', self.onPlaceChanged)
+          // console.log(circle)
+        }
+        catch (err) {
+          console.log(err)
+        }
       }
-    });
+    })
   },
   methods: {
     onPlaceChanged() {

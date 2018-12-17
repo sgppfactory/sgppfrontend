@@ -70,21 +70,19 @@
                                     @placechanged="setPlace">
               </gmaps-autocomplete>
             </b-form-group>
-
             <gmap-map ref="mapRef"
                       :center="{lat:-34.097695, lng:-59.030265}"
-                      :zoom="14"
+                      :zoom="10"
                       map-type-id="terrain"
                       style="width: 100%; height: 300px">
             </gmap-map>
-
           </b-col>
         </b-row>
         <b-row>
           <b-col>
             <b-form-group>
               <!-- <b-form-checkbox-group> -->
-                <b-form-checkbox v-model="form.withuser" value="true">Crear usuario</b-form-checkbox>
+              <b-form-checkbox v-model="form.withuser" value="true">Crear usuario</b-form-checkbox>
               <!-- </b-form-checkbox-group> -->
             </b-form-group>
 <!--           </b-col>
@@ -204,7 +202,6 @@ export default {
                   active: true
                 })
               })
-
           } else {
             loader.hide()
             this.bread.push({
@@ -238,12 +235,7 @@ export default {
         persons.update(this.toUpdate, params)
           .then((result) => {
             if (result.status === 200) {
-              this.$notify({
-                group: 'success',
-                title: 'Ok!',
-                text: result.data.message,
-                type: 'success'
-              })
+              this.getSuccessMessage(result)
             }
             loader.hide()
             this.$route.push('persons')
@@ -254,14 +246,8 @@ export default {
       } else {
         persons.post(params)
           .then((result) => {
-            // console.log(result)
             if (result.status === 201) {
-              this.$notify({
-                group: 'success',
-                title: 'Ok!',
-                text: result.data.message,
-                type: 'success'
-              })
+              this.getSuccessMessage(result)
               this.onReset()
             }
             loader.hide()
@@ -270,6 +256,14 @@ export default {
             this.getErrorMessage(error)
           })
       }
+    },
+    getSuccessMessage (msg) {
+      this.$notify({
+        group: 'success',
+        title: 'Ok!',
+        text: msg.data.message,
+        type: 'success'
+      })
     },
     onReset () {
       this.form = {
@@ -299,7 +293,7 @@ export default {
               this.marker.setMap(null)
             }
 
-            this.marker = new google.maps.Marker({ 
+            this.marker = new google.maps.Marker({
               position,
               map
             })
@@ -343,6 +337,6 @@ li {
   margin: 0 10px;
 }
 a {
-  color: #42b983;
+  color: #42b983 !important;
 }
 </style>

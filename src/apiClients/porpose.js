@@ -8,33 +8,25 @@ export default {
     if (params) {
       return basicClient('/porpose', 'POST', params)
     }
-    return new Promise((resolve, reject) => {
-      reject('Faltan parámetros en la consulta')
-    })
+    throw 'Faltan parámetros en la consulta'
   },
   update: function (id, params) {
     if (id && params) {
       return basicClient('/porpose/' + id, 'PUT', params)
     }
-    return new Promise((resolve, reject) => {
-      reject('Faltan parámetros en la consulta')
-    })
+    throw 'Faltan parámetros en la consulta'
   },
   remove: function (id) {
     if (id) {
       return basicClient('/porpose/' + id, 'DELETE')
     }
-    return new Promise((resolve, reject) => {
-      reject('Faltan parámetros en la consulta')
-    })
+    throw 'Faltan parámetros en la consulta'
   },
   getById: function (id) {
     if (id) {
       return basicClient('/porpose/' + id, 'GET')
     }
-    return new Promise((resolve, reject) => {
-      reject('Faltan parámetros en la consulta')
-    })
+    throw 'Faltan parámetros en la consulta'
   },
   changeState: function (id, state, advanceProject) {
     if (id && state) {
@@ -44,8 +36,6 @@ export default {
       }
       return basicClient('/porpose/' + id + '/state', 'PUT', params)
     }
-    return new Promise((resolve, reject) => {
-      reject('Faltan parámetros en la consulta')
-    })
+    throw 'Faltan parámetros en la consulta'
   }
 }

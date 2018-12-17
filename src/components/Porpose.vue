@@ -344,7 +344,7 @@ export default {
             ? _.map(
                 result.data.result,
                 (porpose) => {
-                  return porpose.type === 2 ? _.extend(porpose, {_rowVariant : 'success' }) : porpose
+                  return porpose.type === 2 ? _.extend(porpose, {_rowVariant: 'success' }) : porpose
                 }
               )
             : []
@@ -474,9 +474,9 @@ export default {
         position: 'bottom right'
       })
     },
-    // changePaginationAdvances (page) {
+    changePaginationAdvances (page) {
 
-    // },
+    },
     toggleRow (row) {
       row.toggleDetails()
     }

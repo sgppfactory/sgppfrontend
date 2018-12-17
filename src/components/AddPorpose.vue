@@ -173,7 +173,7 @@ export default {
     node.getChildrens()
       .then(results => {
         if (results) {
-          this.optionsNodes.push({value: "", text: "Seleccione un Nodo o Estructura"})
+          this.optionsNodes.push({value: '', text: 'Seleccione un Nodo o Estructura'})
           this.optionsNodes = this.optionsNodes.concat(_.map(results.data.message, (item) => {
             return {
               value: item.id,
