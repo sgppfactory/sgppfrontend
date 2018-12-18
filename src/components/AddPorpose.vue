@@ -189,10 +189,11 @@ export default {
               loader.hide()
               let porposeR = result.data.message
               let location = JSON.parse(porposeR.location)
-              if (location) {
+
+              if (!_.isEmpty(location)) {
                 this.setPlace(location)
               }
-
+              console.log(location)
               this.form = {
                 title: porposeR.title,
                 idNode: porposeR.idNode,

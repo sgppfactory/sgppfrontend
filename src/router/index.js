@@ -69,6 +69,10 @@ export default new Router({
       name: 'AddReport',
       component: AddReport
     }, {
+      path: '/showreport',
+      name: 'ShowReport',
+      component: AddReport
+    }, {
       path: '/tasks',
       name: 'Tasks',
       component: Tasks

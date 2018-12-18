@@ -7,15 +7,16 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import Icon from 'vue-awesome/components/Icon'
-import * as VueGoogleMaps from 'vue2-google-maps'
 import Notifications from 'vue-notification'
-import json from '../credentials/data.json'
 import 'vue-loading-overlay/dist/vue-loading.min.css'
 import Loading from 'vue-loading-overlay'
 import HighchartsVue from 'highcharts-vue'
 import Highcharts from 'highcharts'
 import stockInit from 'highcharts/modules/stock'
 import exportingInit from 'highcharts/modules/exporting'
+// import GoogleMapsLoader from 'google-maps'
+import * as VueGoogleMaps from 'vue2-google-maps'
+import json from '../credentials/data.json'
 
 exportingInit(Highcharts)
 stockInit(Highcharts)
@@ -24,6 +25,8 @@ Vue.use(HighchartsVue)
 Vue.use(BootstrapVue)
 Vue.use(Notifications)
 Vue.use(Loading)
+// Vue.use(GoogleMapsLoader)
+
 Vue.use(VueGoogleMaps, {
   load: {
     key: json.gmaps,

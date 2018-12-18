@@ -24,7 +24,7 @@
           Opciones
         </template>
         <template slot="actions" slot-scope="row">
-          <router-link :to="{ name: 'showreport', params: { report: row.item.id }}" v-b-tooltip.hover title="Ver reporte"> 
+          <router-link :to="{ path: 'showreport', query: { reportId: row.item.id }}" v-b-tooltip.hover title="Ver reporte"> 
             <icon name="info" />
           </router-link>
           <a @click="toRemove=row.item.id" v-b-tooltip.hover title="Borrar reporte" v-b-modal.deleteModal class="danger">
@@ -45,7 +45,7 @@
     <b-modal id="deleteModal" v-model="show" title="Eliminar Reporte">
       <p class="my-2">¿Está seguro que desea realizar la siguiente acción?</p>
       <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="deletereport()">
+       <b-btn size="sm" variant="danger" @click="deletereport">
          Eliminar
        </b-btn>
        <b-btn size="sm" variant="primary" @click="show=false">
@@ -72,7 +72,18 @@ export default {
       reports: [],
       fields: [
         {label: 'Título', key: 'title', sortable: true},
-        // {label: 'Observaciones', key: 'observations', sortable: false},
+        {
+          label: 'Fecha creación',
+          key: 'created_at',
+          sortable: true,
+          formatter: (value) => {
+            if (value) {
+              let dateP = new Date(value)
+              return dateP.getDate() + '/' + (dateP.getMonth() + 1) + '/' + dateP.getFullYear()
+            }
+            return ''
+          }
+        },
         {label: 'Opciones', key: 'actions', 'class': 'text-center'}
       ],
       currentPage: 1,

@@ -138,10 +138,10 @@
         </b-form-group>
       </div>
       <div slot="modal-footer" class="w-100 text-right">
-       <b-btn size="sm" variant="danger" @click="changeState">
+       <b-btn size="sm" variant="primary" @click="changeState">
          Cambiar
        </b-btn>
-       <b-btn size="sm" variant="primary" @click="hideChangeState">
+       <b-btn size="sm" variant="danger" @click="hideChangeState">
          Cancelar
        </b-btn>
      </div>
@@ -156,6 +156,7 @@ import porpose from '@/apiClients/porpose'
 import Menu from '@/components/Menu'
 import {formatResponse} from '@/utils/tools.js'
 import _ from 'underscore'
+
 export default {
   name: 'PorposesProjects',
   components: {
@@ -336,6 +337,9 @@ export default {
       }
       // Muestro de a 10 registros...
       params.bypage = 10
+
+      params.order = 'createdAt'
+      params.criteria = 'DESC'
 
       porpose.getFilter(params)
         .then((result) => {

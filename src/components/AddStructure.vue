@@ -143,7 +143,7 @@
                     v-b-tooltip.click.blur.rightbottom 
                     :config="{format: 'DD/MM',useCurrent: false, locale: 'es'}"
                     class="mb-2 mr-sm-2 mb-sm-0 form-control"></date-picker>
-            <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="formStage.isproject" value="true">
+            <b-form-checkbox class="mb-2 mr-sm-2 mb-sm-0" v-model="formStage.isProject" value="true">
               Tipo proyecto
             </b-form-checkbox>
             <b-button type="submit" variant="primary">Agregar</b-button>
@@ -158,7 +158,7 @@
               Opciones
             </template>
             <template slot="isproject" slot-scope="row">
-              {{filterBooleanTable(row.item.isproject)}}
+              {{filterBooleanTable(row.item.isProject)}}
             </template>
             <template slot="actions" slot-scope="row">
               <a @click="deleteStage(row.item.id)" v-b-tooltip.hover title="Borrar Etapa" class="danger">
@@ -216,7 +216,7 @@
                 :sort-by.sync="sortBy"
                 :sort-desc.sync="sortDesc" >
                 <template slot="isproject" slot-scope="row">
-                  {{filterBooleanTable(row.item.isproject)}}
+                  {{filterBooleanTable(row.item.isProject)}}
                 </template>
               </b-table>
             </b-col>
@@ -347,7 +347,7 @@ export default {
       formStage: {
         name: '',
         dateInit: '',
-        isproject: false,
+        isProject: false,
         order: 0
       },
       stages: [],
@@ -565,7 +565,7 @@ export default {
       this.formStage = {
         name: '',
         dateInit: '',
-        isproject: false,
+        isProject: false,
         order: 0
       }
     },
@@ -683,7 +683,7 @@ export default {
       this.formStage = {
         name: '',
         dateInit: '',
-        isproject: false,
+        isProject: false,
         order: 0
       }
 

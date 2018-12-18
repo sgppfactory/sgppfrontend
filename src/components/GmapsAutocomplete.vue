@@ -42,6 +42,7 @@ export default {
     }
   },
   mounted () {
+    console.log(this.defaultValue)
     if (this.defaultValue) {
       this.autocompleteText = this.defaultValue
     }

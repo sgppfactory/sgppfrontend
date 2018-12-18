@@ -5,7 +5,7 @@
     <b-container>
       <h1>{{title}}</h1>
       <b-form @submit="generate" @reset="onReset" id="formReports">
-        <b-row>
+        <b-row id="toHide">
           <b-col>
             <b-form-group label="Nombre:" label-for="name">
               <b-form-input id="name"
@@ -65,9 +65,11 @@
             </b-form-group>
           </b-col>
         </b-row>
-        <b-button type="submit" variant="success">Previsualizar</b-button>
-        <b-button type="button" variant="primary" @click="save">Guardar</b-button>
-        <b-button type="reset" variant="danger">Limpiar</b-button>
+        <b-row id="buttons">
+          <b-button type="submit" variant="success">Previsualizar</b-button>
+          <b-button type="button" variant="primary" @click="save">Guardar</b-button>
+          <b-button type="reset" variant="danger">Limpiar</b-button>
+        </b-row>
       </b-form>
       <div id="showGraphics" v-if="showGraphics">
         <highcharts class="stock" :constructor-type="'stockChart'" :options="stockOptions">
@@ -202,18 +204,27 @@ export default {
 
         if (this.$route.query.reportId) {
           reports.findById(this.$route.query.reportId)
-            .then(report => {
+            .then(result => {
               loader.hide()
               if (result.status === 200) {
-                let report = report.data.message
+                let report = result.data.message
+                let query = JSON.parse(report.query)
                 self.toUpdate = this.$route.query.reportId
-                // let query = JSON.parse(report.query)
-                self.projectsSelected = report.query
-                self.porposesSelected = report.query
+                self.projectsSelected = query.projects
+                self.porposesSelected = query.porposes
                 self.form.title = report.title
-                self.form.subcategory = report.query
+                self.form.subcategory = query.subcategory
+                self.form.cicle = query.cicle
+                // Oculto los botones...
+                document.getElementById('buttons').classList.add('hide')
+                document.getElementById('project').disabled = true
+                document.getElementById('porpose').disabled = true
+                self.generate()
+                document.getElementById('cicles').disabled = true
+                document.getElementById('subcategory').disabled = true
               }
             }).catch((err) => {
+              console.log(err)
               loader.hide()
               self.getErrorMessage(err)
             })
@@ -228,13 +239,16 @@ export default {
       this.$router.push('login')
     },
     generate (ev) {
-      ev.preventDefault()
+      if (ev) {
+        ev.preventDefault()
+      }
       var loader = this.$loading.show()
       var self = this
       var params = _.clone(this.form)
       params.porposes = this.porposesSelected
       params.projects = this.projectsSelected
       this.showGraphics = true
+      document.getElementById('toHide').classList.add('hide')
 
       reports.generate(params)
         .then(result => {
@@ -245,7 +259,13 @@ export default {
               var seriesData = _.map(_.groupBy(data, item => {
                 return item.labelName
               }), (item2, index) => {
-                return {data: _.map(item2, item3 => { return item3.cant }), name: index}
+                return {
+                  data: _.map(item2, item3 => { return item3.cant }),
+                  name: index,
+                  tooltip: {
+                    pointFormat: '<span style="color:{point.color}">\u25CF</span> {point.name}: <b>{point.y}</b><br/>'
+                  }
+                }
               })
 
               var categories = _.map(_.groupBy(data, item => {
@@ -254,21 +274,11 @@ export default {
                 return index
               })
 
-              console.log(categories, seriesData)
-
               self.stockOptions.xAxis = {
                 categories: categories
               }
 
               self.stockOptions.series = seriesData
-              // self.stockOptions.series = [{
-              //   type: 'column',
-              //   data: data,
-              //   // tooltip: {
-              //   //   pointFormat: '<span style="color:{point.color}">\u25CF</span> {point.name}: <b>{point.y}</b><br/>'
-              //   // }
-              // }]
-
             } else {
               data = _.map(data, (item, index) => {
                 return {y: item.cant, x: index, name: item.labelName}
@@ -295,7 +305,6 @@ export default {
                     ? 'Proyectos'
                     : 'Propuestas y Poryectos')}
         }).catch(error => {
-          console.log(error)
           loader.hide()
           this.getErrorMessage(error)
         })
@@ -304,13 +313,16 @@ export default {
       var loader = this.$loading.show()
       let params = _.clone(this.form)
       let query = {
-        porposes: params.porposes,
-        projects: params.projects,
-        projects: params.projects,
+        porposes: this.porposesSelected,
+        projects: this.projectsSelected,
+        cicle: params.cicle,
+        subcategory: params.subcategory
       }
       // params
-      reports.post(params)
-        .then((result) => {
+      reports.post({
+        title: params.title,
+        query: query
+      }).then((result) => {
           loader.hide()
           if (result.status === 201) {
             this.getSuccessMessage(result)
@@ -378,5 +390,8 @@ a {
 .stock {
   width: 90%;
   margin: 0 auto
+}
+.hide {
+  display: none;
 }
 </style>
