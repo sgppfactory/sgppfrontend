@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import GoogleMapsLoader from 'google-maps'
+// import GoogleMapsLoader from 'google-maps'
 import _ from 'underscore'
 
 export default {
@@ -47,11 +47,11 @@ export default {
       this.autocompleteText = this.defaultValue
     }
     var self = this
-    GoogleMapsLoader.load(function(google) {
+    // GoogleMapsLoader.load(function(google) {
       // console.log(google)
       // new google.maps.Map(el, options);
       // TODO: Ver el tema del país por implementación
-      if (google.maps) {
+      // if (google.maps) {
         try {
 
           self.autocomplete = new google.maps.places.Autocomplete(
@@ -59,8 +59,6 @@ export default {
             {types: ['geocode'], componentRestrictions: {country: self.country}}
           )
 
-
-            console.log(self.autocomplete)
           if (!_.isEmpty(self.geolocationOptions) && !_.isEmpty(self.autocomplete)) {
             var circle = new google.maps.Circle({
               center: self.geolocationOptions,
@@ -75,8 +73,8 @@ export default {
         catch (err) {
           console.log(err)
         }
-      }
-    })
+      // }
+    // })
   },
   methods: {
     onPlaceChanged() {

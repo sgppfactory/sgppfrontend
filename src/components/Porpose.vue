@@ -121,7 +121,7 @@
         <b-form-group label="Monto gastado:" label-for="amount">
           <b-form-input id="amount"
                         type="text"
-                        v-model.trim="advanceProject.mount"
+                        v-model.trim="advanceProject.amount"
                         required
                         placeholder="Ingrese un porcentaje de avance"
                         v-b-tooltip.click.blur.rightbottom 
@@ -370,6 +370,7 @@ export default {
         var loader = this.$loading.show()
         var self = this
         row.toggleDetails()
+        self.totalAdvance = self.amountAdvance = 0
         porpose.getById(row.item.id)
           .then((result) => {
             if (result.status === 200) {
@@ -377,14 +378,14 @@ export default {
               var date = new Date(porpose.created_at)
               var localeString = date.toLocaleString('es-AR')
               var place = JSON.parse(porpose.location)
-              var lat = place.lat
-              var lng = place.lng
+              var lat = place ? place.lat : null
+              var lng = place ? place.lng : null
 
               this.dataDetails = {
                 'Título': porpose.title,
                 'Estado': porpose.state,
                 'Tipo': porpose.type === 1 ? 'Propuesta' : 'Proyecto',
-                'Ubicación': place.address ? place.address : ' - ',
+                'Ubicación': place ? place.address : ' - ',
                 'Creado el': porpose.created_at ? localeString : '',
                 'Monto destinado': porpose.amount ? '$ ' + porpose.amount : ' - ',
                 'Detalles': (_.isEmpty(porpose.details) || porpose.details === 'null') ? '' : porpose.details
@@ -430,7 +431,7 @@ export default {
               }
             }
           }).catch((error) => {
-            // console.log(error)
+            console.log(error)
             loader.hide()
             this.getErrorMessage(error)
           })
